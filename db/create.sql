@@ -29,3 +29,26 @@ CREATE TABLE Wishes (
     pid INT NOT NULL REFERENCES Products(id),
     time_added timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC')
 );
+
+CREATE TABLE Sellers (
+    uid INT NOT NULL REFERENCES Users(id) PRIMARY KEY,
+    email VARCHAR UNIQUE NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    avg_rating INT NOT NULL,
+);
+
+CREATE TABLE SellerInventory (
+    uid INT NOT NULL REFERENCES Users(id),
+    pid INT NOT NULL REFERENCES Products(id),
+    quantity INT NOT NULL,
+    PRIMARY KEY(uid, pid)
+);
+
+CREATE TABLE Sold (
+    uid INT NOT NULL REFERENCES Sellers(id),
+    order_link VARCHAR(255) UNIQUE NOT NULL,
+    fullfillment BOOLEAN DEFAULT TRUE,
+    num_items INT NOT NULL,
+    total_amount INT NOT NULL,
+    PRIMARY KEY(uid, order_link)
+);
