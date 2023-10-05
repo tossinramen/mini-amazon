@@ -31,13 +31,3 @@ ORDER BY time_purchased DESC
                               since=since)
         return [Purchase(*row) for row in rows]
     
-    @staticmethod
-    def get_purchases_by_user(uid):
-        rows = app.db.execute('''
-                SELECT p.id, p.time_purchased, pr.name, pr.price 
-                FROM Purchases p 
-                JOIN Products pr ON p.pid = pr.id 
-                WHERE p.uid = :uid
-                ORDER BY p.time_purchased DESC
-            ''', uid=uid)
-        return [dict(id=row[0], name=row[1], price=row[2], time_purchased=row[3]) for row in rows]

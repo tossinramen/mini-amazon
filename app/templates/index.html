@@ -3,6 +3,14 @@
 {% block content %}
 
 <br><br>
+<!-- User Search Form -->
+<form action="{{ url_for('users.redirect_to_user_purchases') }}" method="post">
+  <label for="user_id">Search User's Purchases by User ID:</label>
+  <input type="text" name="user_id" id="user_id" required>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<br><br>
 
 <h2>Products for sale:</h2>
 <table class='table table-hover table-bordered container'>
@@ -31,8 +39,8 @@
   <thead class="thead-dark">
     <tr>
       <th scope="col">Purchase ID</th>
-      <th scope="col">Product Name</th>
-      <th scope="col">Price</th>
+      <th scope="col">Sold By</th>
+      <th scope="col">Time Purchased</th>
     </tr>
   </thead>
   <tbody>
