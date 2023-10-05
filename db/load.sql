@@ -16,4 +16,4 @@ SELECT pg_catalog.setval('public.purchases_id_seq',
                          false);
 
 
-\COPY Product_Rating FROM 'Product_Rating.csv' WITH DELIMITER ',' NULL '' CSV;
+\COPY Product_Rating FROM 'Product_Rating.csv' WITH DELIMITER ',' NULL '' CSV;  

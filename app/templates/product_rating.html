@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br><br>
+
+<h2>Products Reviews:</h2>
+<table class='table table-hover table-bordered container'>
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Product ID</th>
+      <th scope="col">Description</th>
+      <th scope="col">Time Reviewed</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for product in products%}
+      <tr>
+        <th scope="row">{{product.pid}}</th>
+        <td>{{product.description}}</td>
+        <td>{{product.time_reviewed}}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
