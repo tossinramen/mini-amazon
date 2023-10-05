@@ -3,6 +3,18 @@
 {% block content %}
 
 <br><br>
+<!-- <form action="https://google.com">
+  
+  <input type="submit" value="Go to Google" />
+</form> -->
+<form action="{{ url_for('product_rating.redirect_to_user_reviews') }}" method="post">
+  <label for="user_id">Search User's Reviews by User ID:</label>
+  <input type="text" name="user_id" id="user_id" required>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<br><br>
+  <!-- <button><a href="product_rating.html">Go to Another Page</a></button> -->
 
 <h2>Products for sale:</h2>
 <table class='table table-hover table-bordered container'>
