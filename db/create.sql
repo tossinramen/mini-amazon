@@ -22,3 +22,14 @@ CREATE TABLE Purchases (
     pid INT NOT NULL REFERENCES Products(id),
     time_purchased timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC')
 );
+
+CREATE TABLE Product_Rating (
+    uid INT NOT NULL REFERENCES Users(id),
+    pid INT NOT NULL REFERENCES Products(id),
+    description VARCHAR(255) NOT NULL,
+    upvotes INT NOT NULL,
+    downvotes INT NOT NULL,
+    stars INT CHECK (stars >= 1 AND stars <= 5), 
+    time_reviewed timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+    primary key (uid, pid)
+);
