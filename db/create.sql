@@ -32,12 +32,10 @@ CREATE TABLE Wishes (
 
 CREATE TABLE Sellers (
     uid INT NOT NULL REFERENCES Users(id) PRIMARY KEY,
-    email VARCHAR UNIQUE NOT NULL,
-    address VARCHAR(255) NOT NULL,
-    avg_rating INT NOT NULL,
+    avg_rating INT NOT NULL
 );
 
-CREATE TABLE SellerInventory (
+CREATE TABLE Seller_Inventory (
     uid INT NOT NULL REFERENCES Users(id),
     pid INT NOT NULL REFERENCES Products(id),
     quantity INT NOT NULL,
