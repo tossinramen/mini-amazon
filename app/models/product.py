@@ -2,10 +2,11 @@ from flask import current_app as app
 
 
 class Product:
-    def __init__(self, id, name, price, available):
+    def __init__(self, id, name, price, sellerid, available):
         self.id = id
         self.name = name
         self.price = price
+        self.sellerid = sellerid
         self.available = available
 
     @staticmethod
