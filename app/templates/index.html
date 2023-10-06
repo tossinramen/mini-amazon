@@ -10,6 +10,23 @@
   <button type="submit" class="btn btn-primary">Search</button>
 </form>
 
+<!-- Seller Inventory Search Form -->
+<form action="{{ url_for('users.redirect_to_seller_inventory') }}" method="post">
+  <label for="user_id">Search Seller's Inventory by Seller's UID:</label>
+  <input type="text" name="user_id" id="user_id" required>
+  <button type="submit" class="btn btn-primary">Search</button>
+</form>
+<br><br>
+
+<br><br>
+
+<form action="{{ url_for('products.get_top_k_products')}}"
+    method="post">
+  <label for="k">Enter the number of most expensive products:</label>
+  <input type="text" name="k" id="k" required>
+  <button type="submit" class="btn btn-primary">Go</button>
+</form>
+
 <br><br>
 
 <h2>Products for sale:</h2>
