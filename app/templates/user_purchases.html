@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<br><br>
+<body>
+  <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
+</body>
+<br><br>
 <h2>Purchases for User ID: {{ user_purchases[0].uid if user_purchases else 'N/A' }}</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">

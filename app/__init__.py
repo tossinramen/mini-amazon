@@ -20,17 +20,20 @@ def create_app():
 
     from .users import bp as user_bp
     app.register_blueprint(user_bp)
-
+    
     from .product_rating import bp as user_bp
     app.register_blueprint(user_bp)
-    
+
+    from .products import bp as products_bp
+    app.register_blueprint(products_bp)
+
     from .wishlist import bp as wishes_bp
     app.register_blueprint(wishes_bp)
 
     from .seller_inventory import bp as seller_inventory_bp
     app.register_blueprint(seller_inventory_bp)
-    
-    from .products import bp as products_bp
-    app.register_blueprint(products_bp)
+
+    from .carts import bp as carts_bp
+    app.register_blueprint(carts_bp)
 
     return app

@@ -12,7 +12,7 @@ class Product:
     @staticmethod
     def get(id):
         rows = app.db.execute('''
-            SELECT id, name, price, available
+            SELECT id, name, price, sellerid, available
             FROM Products
             WHERE id = :id
             ''', id=id)
@@ -21,7 +21,7 @@ class Product:
     @staticmethod
     def get_all(available=True):
         rows = app.db.execute('''
-            SELECT id, name, price, available
+            SELECT id, name, price, sellerid, available
             FROM Products
             WHERE available = :available
             ''', available=available)
