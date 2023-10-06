@@ -1,3 +1,7 @@
 0,icecream@tastes.good,pbkdf2:sha256:260000$1GvmeoAkcWb89TyU$5f711eafb243c1c1a884715dd9bd6d185f29ccd3dab59ad19cc201a7260091cb,Joey,Shmoey
-1,jingsburneraccount@yahoo.com,password,Jing,Liu
-2,tahsinsleagueaccount@gmail.com,12345678,Tahsin,Rahman
+1,fruitsalad@yummy.yummy,pbkdf2:sha256:260000$1GvmeoAkcWb89TyU$5f711eafb243c1c1a884715dd9bd6d185f29ccd3dab59ad19cc201a7260091cb,John,Doe
+2,yourmom@gmail.com,pbkdf2:sha256:260000$1GvmeoAkcWb89TyU$5f711eafb243c1c1a884715dd9bd6d185f29ccd3dab59ad19cc201a7260091cb,John,Doe
+3,schema@schemers.com,pbkdf2:sha256:260000$1GvmeoAkcWb89TyU$5f711eafb243c1c1a884715dd9bd6d185f29ccd3dab59ad19cc201a7260091cb,John,Doe
+4,apples@bananas.com,pbkdf2:sha256:260000$1GvmeoAkcWb89TyU$5f711eafb243c1c1a884715dd9bd6d185f29ccd3dab59ad19cc201a7260091cb,John,Doe
+5,fruitsalad1@yummy.yummy,pbkdf2:sha256:260000$1GvmeoAkcWb89TyU$5f711eafb243c1c1a884715dd9bd6d185f29ccd3dab59ad19cc201a7260091cb,John,Doe
+6,fruitsalad2@yummy.yummy,pbkdf2:sha256:260000$1GvmeoAkcWb89TyU$5f711eafb243c1c1a884715dd9bd6d185f29ccd3dab59ad19cc201a7260091cb,John,Doe

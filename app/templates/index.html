@@ -13,6 +13,15 @@
 
 <br><br>
 
+<form action="{{ url_for('products.get_top_k_products')}}"
+    method="post">
+  <label for="k">Enter the number of most expensive products:</label>
+  <input type="text" name="k" id="k" required>
+  <button type="submit" class="btn btn-primary">Go</button>
+</form>
+
+<br><br>
+
 <h2>Products for sale:</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
