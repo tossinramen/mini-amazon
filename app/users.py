@@ -88,3 +88,8 @@ def user_purchases(uid):
 def redirect_to_user_purchases():
     user_id = request.form.get('user_id')
     return redirect(url_for('users.user_purchases', uid=user_id))
+
+@bp.route('/redirect_to_seller_inventory', methods=['POST'])
+def redirect_to_seller_inventory():
+    user_id = request.form.get('user_id')
+    return redirect(url_for('seller_inventory.inventory', uid=user_id))

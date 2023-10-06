@@ -1,28 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <br><br>
 <body>
   <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
 </body>
 <br><br>
-<h2>Purchases for User ID: {{ user_purchases[0].uid if user_purchases else 'N/A' }}</h2>
+
+<h2>Top K Most Expensive Products</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
-      <th scope="col">Purchase ID</th>
+      <th scope="col">Product ID</th>
       <th scope="col">Product Name</th>
-      <th scope="col">Time Purchased</th>
+      <th scope="col">Price</th>
     </tr>
   </thead>
   <tbody>
-    {% for purchase in user_purchases %}
+    {% for product in top_k_products%}
       <tr>
-        <td>{{ purchase.id }}</td>
-        <td>{{ purchase.product_name }}</td>
-        <td>{{ purchase.time_purchased }}</td>
+        <th scope="row">{{product.id}}</th>
+        <td>{{product.name}}</td>
+        <td>{{product.price}}</td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
+
+<br><br>
+
 {% endblock %}
