@@ -9,14 +9,7 @@ from .models.user import User
 
 
 from flask import Blueprint
-bp = Blueprint('users', __name__)
-
-
-class LoginForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
+bp = Blueprint('seller', __name__)
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -72,8 +65,3 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for('index.index'))
-
-@bp.route('/redirect_to_seller_inventory', methods=['POST'])
-def redirect_to_seller_inventory():
-    user_id = request.form.get('user_id')
-    return redirect(url_for('seller_inventory.inventory', uid=user_id))
