@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request
+from flask import render_template, redirect, url_for, flash, request, current_app as app
 from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user
 from flask_wtf import FlaskForm
@@ -73,6 +73,22 @@ def logout():
     logout_user()
     return redirect(url_for('index.index'))
 
+@bp.route('/user_purchases/<int:uid>', methods=['GET', 'POST'])
+def user_purchases(uid):
+    query = '''
+    SELECT p.id, p.uid, pr.name as product_name, p.time_purchased
+    FROM Purchases p
+    JOIN Products pr ON p.pid = pr.id
+    WHERE p.uid = :uid
+    '''
+    user_purchases = app.db.execute(query, uid=uid)
+    return render_template('user_purchases.html', user_purchases=user_purchases)
+
+@bp.route('/redirect_to_user_purchases', methods=['POST'])
+def redirect_to_user_purchases():
+    user_id = request.form.get('user_id')
+    return redirect(url_for('users.user_purchases', uid=user_id))
+    
 @bp.route('/redirect_to_seller_inventory', methods=['POST'])
 def redirect_to_seller_inventory():
     user_id = request.form.get('user_id')
