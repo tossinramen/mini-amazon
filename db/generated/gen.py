@@ -1,6 +1,8 @@
 from werkzeug.security import generate_password_hash
 import csv
 from faker import Faker
+import pandas as pd
+import openai
 
 num_users = 100
 num_products = 2000
@@ -9,6 +11,8 @@ num_purchases = 2500
 Faker.seed(0)
 fake = Faker()
 
+api_key = "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"
+openai.api_key = api_key
 
 def get_csv_writer(f):
     return csv.writer(f, dialect='unix')
@@ -41,15 +45,34 @@ def gen_products(num_products):
         for pid in range(num_products):
             if pid % 100 == 0:
                 print(f'{pid}', end=' ', flush=True)
-            name = fake.sentence(nb_words=4)[:-1]
-            price = f'{str(fake.random_int(max=500))}.{fake.random_int(max=99):02}'
+            # name = fake.sentence(nb_words=4)[:-1]
+            name_prompt = "Create a product name for a product on an Amazon site"
+            name_response = openai.Completion.create(
+                engine="text-davinci-002",
+                prompt=name_prompt,
+                max_tokens=20  # Adjust the number of tokens for the product name
+            )
+            name = name_response.choices[0].text.strip()
+
+            price_prompt = f"Assign a price for hypothetical product {name}"
+            price_response = openai.Completion.create(
+                engine="text-davinci-002",
+                prompt=price_prompt,
+                max_tokens=20  # Adjust the number of tokens for the product name
+            )
+            price = int(price_response.choices[0].text.strip()[1:]) # f'{str(fake.random_int(max=500))}.{fake.random_int(max=99):02}'
+
+            # generate random seller id from Sellers.csv
+            available_sids = pd.read_csv("Sellers.csv").iloc[:, 0].tolist()
+            seller = fake.random_element(available_sids)
+
             available = fake.random_element(elements=('true', 'false'))
             if available == 'true':
                 available_pids.append(pid)
-            writer.writerow([pid, name, price, available])
+
+            writer.writerow([pid, name, price, seller, available])
         print(f'{num_products} generated; {len(available_pids)} available')
     return available_pids
-
 
 def gen_purchases(num_purchases, available_pids):
     with open('Purchases.csv', 'w') as f:
