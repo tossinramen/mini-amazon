@@ -22,4 +22,3 @@ def wishes():
         wishlists = None
     # render the page by adding information to the index.html file
     return jsonify([item.__dict__ for item in wishlists])
-

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br><br>
+
+<body>
+  <a href="{{ url_for('index.index', uid=uid) }}" type="button" class="btn btn-light">Home</a>
+</body>
+
+<h2>Cart Items:</h2>
+<table class='table table-hover table-bordered container'>
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Line Item ID</th>
+      <th scope="col">Product Name</th>
+      <th scope="col">Quantity</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for item in cart_items%}
+      <tr>
+        <th scope="row">{{item.liid}}</th>
+        <td>{{item.product_name}}</td>
+        <td>{{item.qty}}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+  
+{% endblock %}
