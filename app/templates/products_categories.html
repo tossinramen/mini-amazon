@@ -1,0 +1,42 @@
+{% extends "products.html" %}
+
+{% block content %}
+
+<br><br>
+
+<h2>Top K Most Expensive Products</h2>
+
+<div class="form-group">
+  <label for="categorySelect">Select a Category:</label>
+  <select class="form-control" id="categorySelect">
+    <option value="all">--</option>
+    <option value="electronics">Electronics</option>
+    <option value="fashion">Fashion and Apparel</option>
+    <option value="home">Home and Garden</option>
+    <option value="media">Books and Media</option>
+    <option value="health">Health and Beauty</option>
+  </select>
+</div>
+
+<table class='table table-hover table-bordered container'>
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Product ID</th>
+      <th scope="col">Product Name</th>
+      <th scope="col">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for product in category_filter%}
+      <tr>
+        <th scope="row">{{product.id}}</th>
+        <td>{{product.name}}</td>
+        <td>{{product.price}}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<br><br>
+
+{% endblock %}

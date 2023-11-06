@@ -12,6 +12,7 @@ bp = Blueprint('products', __name__)
 @bp.route('/get_top_k_products', methods=['POST'])
 def get_top_k_products():
     k = request.form.get('k')  # Get the value of 'k' from the form
+    # category = request.args.get('category') # category filter
 
     # Convert 'k' to an integer
     try:
@@ -29,3 +30,28 @@ def get_top_k_products():
 
     # Pass the top_k_products data to a new template for displaying the results
     return render_template('products.html', top_k_products=top_k_products)
+
+@bp.route('/category_filter', methods=['POST'])
+def category_filter():
+    category = request.args.get('category')
+    
+    if category == '--':
+        query = '''
+        SELECT *
+        FROM products
+        ORDER BY price DESC
+        LIMIT :limit;
+        '''
+    else: 
+        query = '''
+        SELECT *
+        FROM products
+        WHERE category = :category
+        ORDER BY price DESC
+        LIMIT :limit;
+        '''
+
+    filtered_by_category = app.db.execute(query, limit=k) 
+    
+    return render_template('products.html', category_filter=filtered_by_category)   
+    
