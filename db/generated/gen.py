@@ -105,9 +105,80 @@ def gen_seller_inventory(seller_uids, product_uids, max_products, max_quantity_p
 
     return
 
+def gen_orders(user_ids, num_orders):
+    with open('Orders.csv', 'w') as f:
+        writer = get_csv_writer(f)
+        print('Orders...', end=' ', flush=True)
+        available_oids = []
+        order_links_set = set()  
+        for oid in range(1, num_orders + 1):
+            available_oids.append(oid)
+            if oid % 100 == 0:
+                print(f'{oid}', end=' ', flush=True)
+            order_link = None
+            while True:
+                order_link = fake.random_int(min=1000, max=9999)
+                if order_link not in order_links_set:
+                    order_links_set.add(order_link)
+                    break
+            uid = random.choice(user_ids)
+            writer.writerow([order_link, oid, uid])
+        print(f'{num_orders} generated')
+    return available_oids
+
+def gen_line_items(available_orders, seller_ids, product_ids, mode):
+
+    with open('LineItems.csv', mode) as f:
+        writer = get_csv_writer(f)
+        print('LineItems...', end=' ', flush=True)
+
+        total_line_items = 0
+        generated_combinations = set()
+
+        for oid in available_orders:
+            num_line_items = fake.random_int(1, 10)
+            for _ in range(num_line_items):
+                while True:
+                    sid = random.choice(seller_ids)
+                    pid = random.choice(product_ids)
+                    combination = (oid, sid, pid)
+
+                    if combination not in generated_combinations:
+                        generated_combinations.add(combination)
+                        qty = fake.random_int(min=1, max=10)
+                        price = fake.random_int(min=10, max=100)
+                        writer.writerow([oid, sid, pid, qty, price])
+                        total_line_items += 1
+                        break
+        print(f'{total_line_items} line items generated')
+    return
+
+def gen_carts(user_ids, num_carts):
+    with open('Carts.csv', 'w') as f:
+        writer = get_csv_writer(f)
+        print('Carts...', end=' ', flush=True)
+        available_cids = []
+        
+        for cid in range(1001, 1001 + num_carts):  # Start cart IDs at 1001
+            available_cids.append(cid)
+            if cid % 100 == 0:
+                print(f'{cid}', end=' ', flush=True)
+            uid = random.choice(user_ids)
+            writer.writerow([cid, uid])
+        
+        print(f'{num_carts} generated')
+    
+    return available_cids
+
+
+
 
 available_users = gen_users(num_users)
 available_pids = gen_products(num_products)
 gen_purchases(num_purchases, available_pids)
 available_seller_ids = gen_sellers(available_users, 0.3) 
 gen_seller_inventory(available_seller_ids, available_pids, 100, 10000) 
+available_oids = gen_orders(available_users, 1000)
+gen_line_items(available_oids, available_seller_ids, available_pids, "w")
+available_cids = gen_carts(available_users, 500)
+gen_line_items(available_cids, available_seller_ids, available_pids, "a")
