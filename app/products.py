@@ -12,7 +12,6 @@ bp = Blueprint('products', __name__)
 @bp.route('/get_top_k_products', methods=['POST'])
 def get_top_k_products():
     k = request.form.get('k')  # Get the value of 'k' from the form
-    # category = request.args.get('category') # category filter
 
     # Convert 'k' to an integer
     try:
@@ -21,8 +20,9 @@ def get_top_k_products():
         return "Invalid input for 'k'. Please enter a valid number."
 
     query = '''
-    SELECT *
+    SELECT id, name, price, description, sellerid, available, category, image_url
     FROM products
+    WHERE available= true
     ORDER BY price DESC
     LIMIT :limit;
     '''
@@ -37,16 +37,17 @@ def category_filter():
     
     if category == '--':
         query = '''
-        SELECT *
+        SELECT id, name, price, description, sellerid, available, category, image_url
         FROM products
+        WHERE available = true
         ORDER BY price DESC
         LIMIT :limit;
         '''
     else: 
         query = '''
-        SELECT *
+        SELECT id, name, price, description, sellerid, available, category, image_url
         FROM products
-        WHERE category = :category
+        WHERE available = true AND category = :category
         ORDER BY price DESC
         LIMIT :limit;
         '''

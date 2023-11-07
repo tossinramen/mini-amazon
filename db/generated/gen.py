@@ -47,6 +47,8 @@ def gen_products(num_products):
             name = fake.sentence(nb_words=4)[:-1]
             price = f'{str(fake.random_int(max=500))}.{fake.random_int(max=99):02}'
 
+            description = fake.sentence(nb_words=20)[:-1]
+
             # generate random seller id from Sellers.csv
             available_sids = pd.read_csv("Sellers.csv").iloc[:, 0].tolist()
             seller = fake.random_element(available_sids)
@@ -61,7 +63,9 @@ def gen_products(num_products):
                                                     'Books and Media', 
                                                     'Health and Beauty'))
 
-            writer.writerow([pid, name, price, seller, available, category])
+            image_url = f"https://picsum.photos/200/200/?random={pid}"
+
+            writer.writerow([pid, name, price, description, seller, available, category, image_url])
         print(f'{num_products} generated; {len(available_pids)} available')
     return available_pids
 
