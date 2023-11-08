@@ -16,14 +16,14 @@ def get_csv_writer(f):
 
 
 def gen_users(num_users):
-    available_users = []
     with open('Users.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('Users...', end=' ', flush=True)
+        available_users = []
         for uid in range(num_users):
+            available_users.append(uid)
             if uid % 10 == 0:
                 print(f'{uid}', end=' ', flush=True)
-            available_users.append(uid)
             profile = fake.profile()
             email = profile['mail']
             plain_password = f'pass{uid}'
@@ -31,7 +31,9 @@ def gen_users(num_users):
             name_components = profile['name'].split(' ')
             firstname = name_components[0]
             lastname = name_components[-1]
-            writer.writerow([uid, email, password, firstname, lastname])
+            address = fake.address().replace("\n", ", ")
+            balance = round(fake.pydecimal(left_digits=5, right_digits=2, positive=True), 2)
+            writer.writerow([uid, email, password, firstname, lastname, address, balance])
         print(f'{num_users} generated')
     return available_users
 
@@ -46,8 +48,8 @@ def gen_products(num_products):
                 print(f'{pid}', end=' ', flush=True)
             name = fake.sentence(nb_words=4)[:-1]
             price = f'{str(fake.random_int(max=500))}.{fake.random_int(max=99):02}'
-            available = fake.random_element(elements=('true', 'false'))
-            if available == 'true':
+            available = int(fake.random_element(elements=(1, 0)) == 1)  # Map True to 1 and False to 0
+            if available == 1:
                 available_pids.append(pid)
             writer.writerow([pid, name, price, available])
         print(f'{num_products} generated; {len(available_pids)} available')
@@ -199,6 +201,6 @@ available_pids = gen_products(num_products)
 available_seller_ids = gen_sellers(available_users, 0.3) 
 gen_seller_inventory(available_seller_ids, available_pids, 100, 10000) 
 available_purchase_ids = gen_purchases(available_users, 1000)
-gen_bought_line_items(available_pids, available_seller_ids, available_pids, "w")
+gen_bought_line_items(available_purchase_ids, available_seller_ids, available_pids, "w")
 available_cids = gen_carts(available_users, 1000)
 gen_cart_line_items(available_cids, available_seller_ids, available_pids, "w")
