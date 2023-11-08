@@ -6,7 +6,8 @@ import random
 num_users = 100
 num_products = 2000
 num_purchases = 2500
-num_ratings = 1000
+num_product_ratings = 1000
+num_seller_ratings = 1000
 
 Faker.seed(0)
 fake = Faker()
@@ -67,11 +68,11 @@ def gen_purchases(num_purchases, available_pids):
         print(f'{num_purchases} generated')
     return
 
-def gen_ratings(num_ratings, available_pids):
+def gen_product_ratings(num_product_ratings, available_pids):
     with open('Product_Rating.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('Product_Rating...', end=' ', flush=True)
-        for id in range(num_ratings):
+        for id in range(num_product_ratings):
             if id % 100 == 0:
                 print(f'{id}', end=' ', flush=True)
             num = random.randrange(1,5)
@@ -85,12 +86,34 @@ def gen_ratings(num_ratings, available_pids):
             stars = random.randrange(1,5)
             time_reviewed = fake.date_time()
             writer.writerow([uid, pid, description, upvotes, downvotes, stars, time_reviewed])
-        print(f'{num_ratings} generated')
+        print(f'{num_product_ratings} generated')
     return
 
-
+def gen_seller_ratings(num_seller_ratings, available_pids):
+    with open('Seller_Rating.csv', 'w') as f:
+        writer = get_csv_writer(f)
+        print('Seller_Rating...', end=' ', flush=True)
+        for id in range(num_seller_ratings):
+            if id % 100 == 0:
+                print(f'{id}', end=' ', flush=True)
+            num = random.randrange(1,5)
+            upvote_num = random.randrange(0, num_users)
+            downvote_num = random.randrange(0, num_users - upvote_num)
+            uid = fake.random_int(min=0, max=num_users-1)
+            sid = fake.random_int(min=0, max=num_users-1)
+            while (uid == sid):
+                sid = fake.random_int(min=0, max=num_users-1)
+            description = fake.paragraph(nb_sentences=num)
+            upvotes = upvote_num
+            downvotes = downvote_num
+            stars = random.randrange(1,5)
+            time_reviewed = fake.date_time()
+            writer.writerow([uid, sid, description, upvotes, downvotes, stars, time_reviewed])
+        print(f'{num_seller_ratings} generated')
+    return
 
 gen_users(num_users)
 available_pids = gen_products(num_products)
 gen_purchases(num_purchases, available_pids)
-gen_ratings(num_ratings, available_pids)
+gen_product_ratings(num_product_ratings, available_pids)
+gen_seller_ratings(num_seller_ratings, available_pids)

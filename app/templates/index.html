@@ -12,11 +12,13 @@
 
 <br><br>
 
-<form action="{{ url_for('product_rating.redirect_to_user_reviews') }}" method="post">
-  <label for="user_id">Search User's Reviews by User ID:</label>
-  <input type="text" name="user_id" id="user_id" required>
-  <button type="submit" class="btn btn-primary">Search</button>
-</form>
+<body>
+  <a href="{{ url_for('product_rating.product_rating') }}" type="button" class="btn btn-light">Product Reviews</a>
+</body>
+
+<body>
+  <a href="{{ url_for('seller_rating.seller_rating') }}" type="button" class="btn btn-light">Seller Reviews</a>
+</body>
 
 <br><br>
 <form action="{{ url_for('users.redirect_to_seller_inventory') }}" method="post">
