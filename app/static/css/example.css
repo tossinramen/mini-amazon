@@ -1,23 +1,104 @@
-section {
-color: #fff;
-text-align: center;
-}
-
-.container {
-display: table;
-width: 100%;
-}
-
-.left-half {
-background-color: #ff9e2c;
-position: absolute;
-left: 0px;
-width: 50%;
-}
-
-.right-half {
-background-color: #b6701e;
-position: absolute;
-right: 0px;
-width: 50%;
-}
+/* Background */
+body {
+    font-family: 'Lato', sans-serif;
+    background: linear-gradient(to bottom right, #004d7a, #008793); /* Adjust colors as per design */
+    color: #fff; /* Set default text color to white */
+  }
+  
+  /* Styles for the login form area */
+  .login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Full height of the viewport */
+    padding: 1rem;
+  }
+  
+  .login-box {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    color: #333; /* Text color for content inside login box */
+  }
+  
+  .login-form {
+    margin: 0;
+  }
+  
+  .login-form h1 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .login-form label {
+    float: left;
+    color: #333; /* Make sure label text is also black */
+  }
+  
+  .login-form input[type="text"],
+  .login-form input[type="password"] {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 0.25rem;
+    color: #333; /* Dark text color for form inputs */
+  }
+  
+  .login-form input[type="submit"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 0.25rem;
+    background: #007bff;
+    color: #000; /* Button text color changed to black */
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 1rem;
+  }
+  
+  .login-form input[type="submit"]:hover {
+    background: #0056b3;
+  }
+  
+  .login-form a {
+    text-decoration: none;
+    color: #007bff; /* Link color inside the login box */
+    display: block;
+    text-align: center;
+    margin-top: 1rem;
+  }
+  
+  .login-form a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Error messages */
+  .error {
+    color: red;
+    font-size: 0.875rem;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .login-box {
+      padding: 1rem;
+    }
+  }
+  
+  /* Override Bootstrap button styles to ensure the text is black */
+  .btn, .btn-light, .btn-primary, .btn-secondary, .btn-success, .btn-info, .btn-warning, .btn-danger {
+    color: #000 !important; /* Important to override other styles if necessary */
+    font-weight: bold;
+  }
+  
+  /* Styles for other elements */
+  h1, h2, h3, h4, h5, h6, p, a, label {
+    font-family: 'Lato', sans-serif;
+    font-size: larger; /* Increase the font size */
+    font-weight: bold; /* Make the font weight bold */
+    /* No need to set color here since it's set for the body */
+  }

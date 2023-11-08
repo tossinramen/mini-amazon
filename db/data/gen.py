@@ -47,7 +47,7 @@ def gen_products(num_products):
             if pid % 100 == 0:
                 print(f'{pid}', end=' ', flush=True)
             name = fake.sentence(nb_words=4)[:-1]
-            price = f'{str(fake.random_int(max=500))}.{fake.random_int(max=99):02}'
+            price = '{:.2f}'.format(fake.pydecimal(min_value=1, max_value=500, right_digits=2))
             available = int(fake.random_element(elements=(1, 0)) == 1)  # Map True to 1 and False to 0
             if available == 1:
                 available_pids.append(pid)
@@ -142,8 +142,9 @@ def gen_bought_line_items(available_purchases, seller_ids, product_ids, mode):
                     if combination not in generated_combinations:
                         generated_combinations.add(combination)
                         qty = fake.random_int(min=1, max=10)
-                        price = fake.random_int(min=10, max=100)
-                        writer.writerow([purchase_id, sid, pid, qty, price, False])
+                        price = '{:.2f}'.format(fake.pydecimal(min_value=10, max_value=100, right_digits=2))
+                        fulfilled = fake.boolean()
+                        writer.writerow([purchase_id, sid, pid, qty, price, fulfilled])
                         total_line_items += 1
                         break
         print(f'{total_line_items} line items generated')
@@ -169,7 +170,7 @@ def gen_cart_line_items(available_carts, seller_ids, product_ids, mode):
                     if combination not in generated_combinations:
                         generated_combinations.add(combination)
                         qty = fake.random_int(min=1, max=10)
-                        price = fake.random_int(min=10, max=100)
+                        price = '{:.2f}'.format(fake.pydecimal(min_value=10, max_value=100, right_digits=2))
                         writer.writerow([cart_id, sid, pid, qty, price])
                         total_line_items += 1
                         break
