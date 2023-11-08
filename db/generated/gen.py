@@ -174,20 +174,20 @@ def gen_cart_line_items(available_purchases, seller_ids, product_ids, mode):
         print(f'{total_line_items} line items generated')
     return
 
-def gen_carts(user_ids, num_carts):
+def gen_carts(user_ids, last_purchase_id):
     with open('Carts.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('Carts...', end=' ', flush=True)
         available_cids = []
         
-        for cid in range(1001, 1001 + num_carts):  # Start cart IDs at 1001
+        for uid in user_ids:  # Start cart IDs at 1001
+            cid = last_purchase_id + uid + 1
             available_cids.append(cid)
-            if cid % 100 == 0:
-                print(f'{cid}', end=' ', flush=True)
-            uid = random.choice(user_ids)
+            if cid % 10 == 0:
+                print(f'{uid}', end=' ', flush=True)
             writer.writerow([cid, uid])
         
-        print(f'{num_carts} generated')
+        print(f'{len(user_ids)} generated')
     return available_cids
 
 
@@ -200,5 +200,5 @@ available_seller_ids = gen_sellers(available_users, 0.3)
 gen_seller_inventory(available_seller_ids, available_pids, 100, 10000) 
 available_purchase_ids = gen_purchases(available_users, 1000)
 gen_bought_line_items(available_pids, available_seller_ids, available_pids, "w")
-available_cids = gen_carts(available_users, 500)
+available_cids = gen_carts(available_users, 1000)
 gen_cart_line_items(available_cids, available_seller_ids, available_pids, "a")
