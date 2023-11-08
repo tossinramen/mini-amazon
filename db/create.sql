@@ -37,7 +37,7 @@ CREATE TABLE Seller_Inventory (
     uid INT NOT NULL REFERENCES Users(id),
     pid INT NOT NULL REFERENCES Products(id),
     quantity INT NOT NULL,
-    PRIMARY KEY(uid, pid)
+    PRIMARY KEY (uid, pid)
 );
 CREATE TABLE Sellers (
     uid INT NOT NULL REFERENCES Users(id) PRIMARY KEY,
@@ -56,22 +56,22 @@ CREATE TABLE Carts (
 
 
 CREATE TABLE CartLineItems (    
-    id INT NOT NULL REFERENCES Orders(oid),
+    id INT NOT NULL REFERENCES Carts(id),
     sid INT NOT NULL REFERENCES Sellers(uid),
     pid INT NOT NULL REFERENCES Products(id),
     qty INT NOT NULL,
     price INT NOT NULL,
-    PRIMARY KEY (oid, sid, pid)
+    PRIMARY KEY (id, sid, pid)
 );
 
 CREATE TABLE BoughtLineItems (    
-    id INT NOT NULL REFERENCES Orders(oid),
+    id INT NOT NULL REFERENCES Purchases(id),
     sid INT NOT NULL REFERENCES Sellers(uid),
     pid INT NOT NULL REFERENCES Products(id),
     qty INT NOT NULL,
     price INT NOT NULL,
-    fulfilled BOOLEAN DEFAULT FALSE
-    PRIMARY KEY (oid, sid, pid)
+    fulfilled BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (id, sid, pid)
 );
 
 
