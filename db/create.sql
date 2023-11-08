@@ -15,7 +15,6 @@ CREATE TABLE Products (
     name VARCHAR(255) UNIQUE NOT NULL,
     price DECIMAL(12,2) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    sellerid INT NOT NULL REFERENCES Users(id),
     available BOOLEAN DEFAULT TRUE,
     category VARCHAR(255) NOT NULL,
     image_url VARCHAR(255) NOT NULL
