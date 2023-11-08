@@ -1,11 +1,12 @@
-from flask import render_template, redirect, url_for, flash, request, current_app as app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app as app
 from werkzeug.urls import url_parse
-from flask_login import login_user, logout_user, current_user
+from flask_login import login_user, logout_user, current_user, login_required
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
-
 from .models.user import User
+
+
 
 
 from flask import Blueprint
@@ -73,23 +74,46 @@ def logout():
     logout_user()
     return redirect(url_for('index.index'))
 
-@bp.route('/user_purchases/<int:uid>', methods=['GET', 'POST'])
-def user_purchases(uid):
-    query = '''
-    SELECT p.id, p.uid, pr.name as product_name, p.time_purchased
-    FROM Purchases p
-    JOIN Products pr ON p.pid = pr.id
-    WHERE p.uid = :uid
-    '''
-    user_purchases = app.db.execute(query, uid=uid)
-    return render_template('user_purchases.html', user_purchases=user_purchases)
+@bp.route('/my_purchases', methods=['GET'])
+@login_required
+def my_purchases():
+    return redirect(url_for('users.user_purchases', uid=current_user.get_id()))
 
-@bp.route('/redirect_to_user_purchases', methods=['POST'])
-def redirect_to_user_purchases():
-    user_id = request.form.get('user_id')
-    return redirect(url_for('users.user_purchases', uid=user_id))
+@bp.route('/profile')
+@login_required  
+def profile():
+    return render_template('profile.html', user=current_user)
+
+PER_PAGE = 10  
+
+@bp.route('/user_purchases/<int:uid>', methods=['GET'])
+@login_required
+def user_purchases(uid):
+    page = request.args.get('page', 1, type=int)
+    offset = (page - 1) * PER_PAGE
+    total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM Purchases WHERE uid = :uid', uid=uid)
+    # Assuming the first element of the tuple is the 'total_count'.
+    total = total_result[0][0] if total_result else 0
+
+    query = '''
+    SELECT p.id AS purchase_id, pr.name AS product_name, b.qty, b.price, p.time_purchased, b.fulfilled
+    FROM Purchases p
+    JOIN BoughtLineItems b ON p.id = b.id
+    JOIN Products pr ON b.pid = pr.id
+    WHERE p.uid = :uid
+    ORDER BY p.time_purchased DESC
+    LIMIT :limit OFFSET :offset
+    '''
+    user_purchases = app.db.execute(query, uid=uid, limit=PER_PAGE, offset=offset)
+
+    return render_template('user_purchases.html', user_purchases=user_purchases, total=total, page=page, per_page=PER_PAGE, uid=uid)
 
 @bp.route('/redirect_to_seller_inventory', methods=['POST'])
 def redirect_to_seller_inventory():
     user_id = request.form.get('user_id')
     return redirect(url_for('seller_inventory.inventory', uid=user_id))
+
+@bp.route('/redirect_to_user_purchases', methods=['POST'])
+def redirect_to_user_purchases():
+    user_id = request.form.get('user_id')
+    return redirect(url_for('users.user_purchases', uid=user_id))
