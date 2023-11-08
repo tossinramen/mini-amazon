@@ -141,13 +141,13 @@ def gen_bought_line_items(available_purchases, seller_ids, product_ids, mode):
                         generated_combinations.add(combination)
                         qty = fake.random_int(min=1, max=10)
                         price = fake.random_int(min=10, max=100)
-                        writer.writerow([purchase_id, sid, pid, qty, price])
+                        writer.writerow([purchase_id, sid, pid, qty, price, False])
                         total_line_items += 1
                         break
         print(f'{total_line_items} line items generated')
     return
 
-def gen_cart_line_items(available_purchases, seller_ids, product_ids, mode):
+def gen_cart_line_items(available_carts, seller_ids, product_ids, mode):
 
     with open('CartLineItems.csv', mode) as f:
         writer = get_csv_writer(f)
@@ -156,19 +156,19 @@ def gen_cart_line_items(available_purchases, seller_ids, product_ids, mode):
         total_line_items = 0
         generated_combinations = set()
 
-        for purchase_id in available_purchases:
+        for cart_id in available_carts:
             num_line_items = fake.random_int(1, 10)
             for _ in range(num_line_items):
                 while True:
                     sid = random.choice(seller_ids)
                     pid = random.choice(product_ids)
-                    combination = (purchase_id, sid, pid)
+                    combination = (cart_id, sid, pid)
 
                     if combination not in generated_combinations:
                         generated_combinations.add(combination)
                         qty = fake.random_int(min=1, max=10)
                         price = fake.random_int(min=10, max=100)
-                        writer.writerow([purchase_id, sid, pid, qty, price])
+                        writer.writerow([cart_id, sid, pid, qty, price])
                         total_line_items += 1
                         break
         print(f'{total_line_items} line items generated')
