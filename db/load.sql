@@ -31,9 +31,14 @@ SELECT pg_catalog.setval('public.carts_cid_seq',
                          (SELECT MAX(cid)+1 FROM Carts),
                          false);
 
-\COPY LineItems FROM 'LineItems.csv' WITH DELIMITER ',' NULL '' CSV
+\COPY CartLineItems FROM 'CartLineItems.csv' WITH DELIMITER ',' NULL '' CSV
 SELECT pg_catalog.setval('public.lineitems_liid_seq',
-                         (SELECT MAX(liid)+1 FROM LineItems),
+                         (SELECT MAX(id)+1 FROM CartLineItems),
+                         false);
+
+\COPY BoughtLineItems FROM 'BoughtLineItems.csv' WITH DELIMITER ',' NULL '' CSV
+SELECT pg_catalog.setval('public.lineitems_liid_seq',
+                         (SELECT MAX(id)+1 FROM BoughtLineItems),
                          false);
 
 
