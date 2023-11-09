@@ -2,14 +2,14 @@ from flask import current_app as app
 from .line_item import LineItem
 
 class Cart:
-    def __init__(self, cid, uid):
-        self.cid = cid
+    def __init__(self, id, uid):
+        self.id = id
         self.uid = uid
 
     @staticmethod
     def get_by_uid(uid):
         row = app.db.execute('''
-            SELECT cid, uid
+            SELECT id, uid
             FROM Carts
             WHERE uid = :uid
             ''', uid=uid)
@@ -25,7 +25,7 @@ class Cart:
     
         if cart:
             # get line items in the cart
-            line_items = LineItem.get_by_cid(cart.cid)
+            line_items = LineItem.get_by_id(cart.id)
         else:
             line_items = None
 
