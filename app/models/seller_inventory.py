@@ -17,11 +17,22 @@ WHERE uid = :uid
         return SellerInventory(*(rows[0])) if rows else None
 
     @staticmethod
-    def get_all_by_uid(uid):
+    def get_all_by_uid_with_pagination(uid, limit, offset):
         rows = app.db.execute('''
 SELECT uid, pid, quantity
 FROM Seller_Inventory
 WHERE uid = :uid
+LIMIT :limit OFFSET :offset
 ''',
-                              uid=uid)
+                              uid=uid, limit=limit, offset=offset)
         return [SellerInventory(*row) for row in rows]
+
+    @staticmethod
+    def count_all_by_uid(uid):
+        result = app.db.execute('''
+SELECT COUNT(*) AS total_count
+FROM Seller_Inventory
+WHERE uid = :uid
+''',
+                                uid=uid)
+        return result[0][0] if result else 0
