@@ -14,18 +14,19 @@ class Seller_Rating:
         self.time_reviewed = time_reviewed  
 
     @staticmethod
-    def get_last_5(uid):
+    def get_all(uid, limit, offset):
         rows = app.db.execute('''
             SELECT sr.uid as uid, sr.sid as sid, s.firstname as seller_firstname, s.lastname as seller_lastname, sr.description, sr.upvotes, sr.downvotes, sr.stars, sr.time_reviewed
             FROM Seller_Rating sr
             JOIN Users s ON s.id = sr.sid
             WHERE uid = :uid
             ORDER BY time_reviewed DESC
+            LIMIT :limit OFFSET :offset
             ''', uid=uid)
         if not rows:
             return None
         else:  
-            return [Seller_Rating(*row) for row in rows[:5]]
+            return [Seller_Rating(*row) for row in rows]
     
     @staticmethod
     def get(uid, sid):

@@ -15,16 +15,22 @@ bp = Blueprint('product_rating', __name__)
 # @bp.route('/product_rating/<int:uid>', methods=['GET', 'POST'])
 @bp.route('/product_rating')
 def product_rating():
+    page = request.args.get('page', 1, type=int)
+    offset = (page - 1) * PER_PAGE
+    total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM Product_Rating WHERE uid = :uid', uid=current_user.id)
+    # Assuming the first element of the tuple is the 'total_count'.
+    total = total_result[0][0] if total_result else 0
+
     # get all available products for sale:
     # find the products current user has bought:
     count = len(app.db.execute('''SELECT id FROM Users WHERE id = :uid''', uid = current_user.id))
 
     if count > 0:
-        ratings = Product_Rating.get_last_5(current_user.id)  
+        ratings = Product_Rating.get_all(current_user.id. limit=PER_PAGE, offset = offset)  
     else:
         ratings = None    
     return render_template('product_rating.html',
-                           ratings=ratings)  
+                           ratings=ratings, total=total, page=page, per_page=PER_PAGE, uid = current_user.id)  
     # render the page by adding information to the index.html file
     # return render_template('index.html',
     #                        avail_products=products,

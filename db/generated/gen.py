@@ -72,20 +72,28 @@ def gen_product_ratings(num_product_ratings, available_pids):
     with open('Product_Rating.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('Product_Rating...', end=' ', flush=True)
+        generated_combinations = set()
+
         for id in range(num_product_ratings):
-            if id % 100 == 0:
-                print(f'{id}', end=' ', flush=True)
-            num = random.randrange(1,5)
-            upvote_num = random.randrange(0, num_users)
-            downvote_num = random.randrange(0, num_users - upvote_num)    
-            uid = fake.random_int(min=0, max=num_users-1)
-            pid = fake.random_element(elements=available_pids)
-            description = fake.paragraph(nb_sentences=num)
-            upvotes = upvote_num
-            downvotes = downvote_num
-            stars = random.randrange(1,5)
-            time_reviewed = fake.date_time()
-            writer.writerow([uid, pid, description, upvotes, downvotes, stars, time_reviewed])
+            while True:
+                    num = random.randrange(1,5)
+                    upvote_num = random.randrange(0, num_users)
+                    downvote_num = random.randrange(0, num_users - upvote_num)
+                    uid = fake.random_int(min=0, max=num_users-1)
+                    pid = fake.random_element(elements=available_pids)
+                    combination = (uid, pid)
+
+                    if combination not in generated_combinations:
+                        if id % 100 == 0:
+                            print(f'{id}', end=' ', flush=True)
+                        generated_combinations.add(combination)
+                        description = fake.paragraph(nb_sentences=num)
+                        upvotes = upvote_num
+                        downvotes = downvote_num
+                        stars = random.randrange(1,5)
+                        time_reviewed = fake.date_time()
+                        writer.writerow([uid, pid, description, upvotes, downvotes, stars, time_reviewed])
+                        break
         print(f'{num_product_ratings} generated')
     return
 
