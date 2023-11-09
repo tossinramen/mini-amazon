@@ -23,6 +23,25 @@ def inventory(uid):
                            page=page, per_page=per_page, total=total_items,
                            total_pages=total_pages, uid=uid)
 
-@bp.route('/past_seller_orders')
-def past_seller_orders():
-    return redirect(url_for('users.past_seller_orders', uid=current_user.get_id()))
+
+
+@bp.route('/past_seller_orders/<int:uid>')
+def past_seller_orders(uid):
+    PER_PAGE = 10 
+    page = request.args.get('page', 1, type=int)
+    offset = (page - 1) * PER_PAGE
+    total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM BoughtLineItems WHERE sid = :uid', uid=uid)
+    # Assuming the first element of the tuple is the 'total_count'.
+    total = total_result[0][0] if total_result else 0
+
+    query = """
+        SELECT id, sid, pid, qty, price, fulfilled
+        FROM BoughtLineItems
+        WHERE sid = :uid
+        LIMIT :limit OFFSET :offset
+    """
+    
+    seller_orders = app.db.execute(query, uid=uid, limit=PER_PAGE, offset=offset)  
+    
+    return render_template('seller_orders.html', inventory=seller_orders, total=total,
+                           page=page, per_page=PER_PAGE, uid=uid)

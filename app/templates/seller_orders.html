@@ -4,22 +4,28 @@
   <br><br>
   <body>
     <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
-    <a href="{{ url_for('users.my_past_seller_orders') }}" type="button" class="btn btn-light">Past Orders</a> <!-- Add this button -->
+    <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a> <!-- Add this button -->
   </body>
   <br><br>
-  <h2>Seller's Inventory:</h2>
+  <h2>Seller's Orders:</h2>
   <table class='table table-hover table-bordered container'>
     <thead class="thead-dark">
       <tr>
+        <th scope="col">Order ID</th>
         <th scope="col">Product ID</th>
         <th scope="col">Quantity</th>
+        <th scope="col">Price</th>
+        <th scope="col">Fulfilled</th>
       </tr>
     </thead>
     <tbody>
-      {% for item in inventory %}
+      {% for order in inventory %}
         <tr>
-          <td>{{ item.pid }}</td>
-          <td>{{ item.quantity }}</td>
+          <td>{{ order.id }}</td>
+          <td>{{ order.pid }}</td>
+          <td>{{ order.qty }}</td>
+          <td>{{ order.price }}</td>
+          <td>{{ "Yes" if order.fulfilled else "No" }}</td>
         </tr>
       {% endfor %}
     </tbody>
@@ -30,7 +36,7 @@
       {% set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) %}
       {% for p in range(1, total_pages + 1) %}
       <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link" href="{{ url_for('seller_inventory.inventory', uid=uid, page=p) }}">{{ p }}</a>
+        <a class="page-link" href="{{ url_for('seller_inventory.past_seller_orders', uid=uid, page=p) }}">{{ p }}</a>
       </li>
       {% endfor %}
     </ul>
