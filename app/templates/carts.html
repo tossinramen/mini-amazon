@@ -15,17 +15,26 @@
     <thead class="thead-dark">
       <tr>
         <th scope="col">Product Name</th>
+        <th scope="col">Price</th>
         <th scope="col">Quantity</th>
+        <th scope="col">Total Price</th>
         <th scope="col">Remove</th>
       </tr>
     </thead>
+
+    {% set cart_totals = namespace(total=0) %}
+
     <tbody>
       {% for item in cart_items %}
+      {% set item_total = item.price * item.qty %}
+      {% set cart_totals.total = cart_totals.total + item_total %}
         <tr>
           <td>{{ item.product_name }}</td>
+          <td>${{ '%0.2f' % item.price }}</td>
           <td>
             <input type="number" name="quantity_{{ item.id }}_{{ item.pid }}_{{ item.sid }}" value="{{ item.qty }}" min="1" class="form-control">
           </td>
+          <td>${{ '%0.2f' % item_total }}</td>
           <td>
             <form method = "POST" action="{{ url_for('carts.remove_item', id=item.id, pid=item.pid, sid=item.sid) }} ">
               <input type="hidden" name="user_id" value="{{ uid }}">
@@ -37,6 +46,12 @@
         </tr>
       {% endfor %}
     </tbody>
+    <tfoot>
+  <tr>
+    <td colspan="3" class="text-right"><strong>Cart Total:</strong></td>
+    <td colspan="2">${{ '%0.2f' % cart_totals.total }}</td>
+  </tr>
+</tfoot>
   </table>
 
   
