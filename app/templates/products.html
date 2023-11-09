@@ -11,9 +11,9 @@
 <h2>Available Products</h2>
 
 <div class="form-group">
-  <form action="{{ url_for('products.category_filter') }}" method="GET" id="filterForm">
+  <form action="{{ url_for('products.get_products', keywords=keywords, category=category) }}" method="GET" id="filterForm">
     <label for="categorySelect">Select a Category:</label>
-    <select class="form-control" name="category" id="categorySelect">
+    <select class="form-control" name="category" id="categorySelect" onchange="this.form.submit()">
       <option value="all">--</option>
       <option value="Electronics">Electronics</option>
       <option value="Fashion and Apparel">Fashion and Apparel</option>
@@ -33,6 +33,7 @@
       <th scope="col">Price</th>
       <th scope="col">Description</th>
       <th scope="col">Category</th>
+      <th scope="col">Image</th>
     </tr>
   </thead>
   <tbody>
@@ -43,11 +44,22 @@
         <td>{{product.price}}</td>
         <td>{{product.description}}</td>
         <td>{{product.category}}</td>
+        <td>
+          <img src="{{ product.image_url }}" alt="{{ product.name }} Image" width="100" height="100">
+        </td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
-
-<br><br>
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) %}
+    {% for p in range(1, total_pages + 1) %}
+    <li class="page-item {% if p == page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('products.get_products', page=p, keywords=keywords, category=category) }}">{{ p }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
 
 {% endblock %}

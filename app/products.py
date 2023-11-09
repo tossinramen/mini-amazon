@@ -1,6 +1,7 @@
-from flask import render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user
+from werkzeug.exceptions import abort
 
 from .models.product import Product
 from flask import current_app as app
@@ -9,43 +10,48 @@ from flask import current_app as app
 from flask import Blueprint
 bp = Blueprint('products', __name__)
 
-@bp.route('/get_products', methods=['POST'])
+PER_PAGE = 10
+
+@bp.route('/get_products', methods=['GET', 'POST'])
 def get_products():
-    k = request.form.get('k')  # Get the value of 'k' from the form
+    page = request.args.get('page', 1, type=int)
+    category = request.args.get('category', 'all') 
+    offset = (page - 1) * PER_PAGE
+    search = ''
 
-    # Convert 'k' to an integer
-    try:
-        k = int(k)
-    except ValueError:
-        return "Invalid input for 'k'. Please enter a valid number."
-    query = '''
-    SELECT id, name, price, description, available, category, image_url
+    if request.method == 'POST':
+        search = request.form.get('keywords')  # Get the value from the form
+        if not search:
+            abort(400, "Search keywords required")
+        return redirect(url_for('products.get_products', page=1, keywords=search, category=category))
+
+    elif request.method == 'GET':
+        search = request.args.get('keywords', '')  # Get the value from the URL query parameter
+
+    keywords = search.split() if search else []
+
+    # Start building the base query
+    base_query = '''
     FROM products
-    WHERE available = true;
+    WHERE available = true
     '''
-    products = app.db.execute(query)
 
-    # Pass the top_k_products data to a new template for displaying the results
-    return render_template('products.html', products=products)
+    # Add category filter if applicable
+    if category != 'all':
+        base_query += f' AND category = :category '
 
-@bp.route('/category_filter', methods=['GET', 'POST'])
-def category_filter():
-    category = request.args.get('category')
-    
-    if category == '--':
-        query = '''
-        SELECT id, name, price, description, available, category, image_url
-        FROM products
-        WHERE available = true;
-        '''
-    else: 
-        query = '''
-        SELECT id, name, price, description, available, category, image_url
-        FROM products
-        WHERE available = true AND category = :category;
-        '''
+    # Append search criteria to the base query
+    for keyword in keywords:
+        base_query += f" AND (name ~* '\\m{keyword}\\M' OR description ~* '\\m{keyword}\\M')"
 
-    category_filter = app.db.execute(query, category=category) 
-    
-    return render_template('products.html', products=category_filter)   
-    
+    # Execute the count query with search criteria
+    total_query = 'SELECT COUNT(*) ' + base_query
+    total_result = app.db.execute(total_query, category=category)
+    total = total_result[0][0] if total_result else 0
+
+    # Execute the main query with search criteria and pagination
+    main_query = 'SELECT id, name, price, description, available, category, image_url ' + base_query
+    main_query += ' LIMIT :limit OFFSET :offset;'
+    products = app.db.execute(main_query, limit=PER_PAGE, offset=offset, category=category)
+
+    return render_template('products.html', products=products, keywords=keywords, total=total, per_page=PER_PAGE, page=page, category=category)
