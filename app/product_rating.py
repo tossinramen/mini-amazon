@@ -10,7 +10,7 @@ from .models.user import User
 from flask import Blueprint
 from flask import jsonify
 bp = Blueprint('product_rating', __name__)
-
+PER_PAGE = 10
 
 # @bp.route('/product_rating/<int:uid>', methods=['GET', 'POST'])
 @bp.route('/product_rating')
@@ -26,7 +26,7 @@ def product_rating():
     count = len(app.db.execute('''SELECT id FROM Users WHERE id = :uid''', uid = current_user.id))
 
     if count > 0:
-        ratings = Product_Rating.get_all(current_user.id. limit=PER_PAGE, offset = offset)  
+        ratings = Product_Rating.get_all(current_user.id, limit=PER_PAGE, offset = offset)  
     else:
         ratings = None    
     return render_template('product_rating.html',

@@ -21,7 +21,7 @@ class Product_Rating:
             WHERE uid = :uid
             ORDER BY time_reviewed DESC
             LIMIT :limit OFFSET :offset
-            ''', uid=uid)
+            ''', uid=uid, limit=limit, offset=offset)
         if not rows:
             return None
         else:  

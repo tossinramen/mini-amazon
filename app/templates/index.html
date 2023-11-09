@@ -3,21 +3,15 @@
 {% block content %}
 
 <br><br>
-<!-- User Search Form -->
-<form action="{{ url_for('users.redirect_to_user_purchases') }}" method="post">
-  <label for="user_id">Search User's Purchases by User ID:</label>
-  <input type="text" name="user_id" id="user_id" required>
-  <button type="submit" class="btn btn-primary">Search</button>
-</form>
 
 <br><br>
 
 <body>
-  <a href="{{ url_for('product_rating.product_rating') }}" type="button" class="btn btn-light">Product Reviews</a>
+  <a href="{{ url_for('product_rating.product_rating', uid=uid, page=1) }}" type="button" class="btn btn-light">Product Reviews</a>
 </body>
 
 <body>
-  <a href="{{ url_for('seller_rating.seller_rating') }}" type="button" class="btn btn-light">Seller Reviews</a>
+  <a href="{{ url_for('seller_rating.seller_rating', uid=uid, page=1) }}" type="button" class="btn btn-light">Seller Reviews</a>
 </body>
 
 <br><br>
