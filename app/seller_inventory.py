@@ -22,3 +22,7 @@ def inventory(uid):
     total_items = len(seller_inventory)
 
     return render_template('seller_page.html', inventory=seller_inventory, page=page, per_page=per_page, total=total_items, uid=uid)
+
+@bp.route('/past_seller_orders')
+def past_seller_orders():
+    return redirect(url_for('users.past_seller_orders', uid=current_user.get_id()))
