@@ -24,6 +24,9 @@ def create_app():
     from .product_rating import bp as user_bp
     app.register_blueprint(user_bp)
 
+    from .seller_rating import bp as user_bp
+    app.register_blueprint(user_bp)
+
     from .products import bp as products_bp
     app.register_blueprint(products_bp)
 

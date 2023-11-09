@@ -4,9 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from .. import login
 
-class User(UserMixin):
-    # ... your existing code for the User class ...
-
 class Seller(User):
     def __init__(self, id, email, firstname, lastname, avg_rating):
         super().__init__(id, email, firstname, lastname)

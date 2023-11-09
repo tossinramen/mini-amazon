@@ -239,7 +239,7 @@ def gen_seller_ratings(num_seller_ratings, available_pids):
                     sid = fake.random_int(min=0, max=num_users-1)
                     combination = (uid, sid)
 
-                    if combination not in generated_combinations and uid != sid:
+                    if combination not in generated_combinations:
                         if id % 100 == 0:
                             print(f'{id}', end=' ', flush=True)
                         generated_combinations.add(combination)
