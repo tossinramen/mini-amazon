@@ -108,10 +108,9 @@ def user_purchases(uid):
 
     return render_template('user_purchases.html', user_purchases=user_purchases, total=total, page=page, per_page=PER_PAGE, uid=uid)
 
-@bp.route('/redirect_to_seller_inventory', methods=['POST'])
+@bp.route('/seller_page')
 def redirect_to_seller_inventory():
-    user_id = request.form.get('user_id')
-    return redirect(url_for('seller_inventory.inventory', uid=user_id))
+    return redirect(url_for('seller_inventory.inventory', uid=current_user.get_id()))
 
 @bp.route('/redirect_to_user_purchases', methods=['POST'])
 def redirect_to_user_purchases():
