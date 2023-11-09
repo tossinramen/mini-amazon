@@ -21,3 +21,28 @@ position: absolute;
 right: 0px;
 width: 50%;
 }
+
+.remove-btn {
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+  }
+  
+  .remove-icon {
+    display: inline-block;
+    padding: .5rem;
+    font-size: 1.2rem;
+    color: #dc3545; /* Red color for the icon */
+    transition: all 0.3s ease; /* Smooth transition for hover effect */
+    border-radius: 0.25rem; /* Slightly rounded corners for the icon background */
+  }
+  
+  .remove-btn:hover .remove-icon {
+    color: #fff; /* White color for the icon on hover */
+    background-color: #dc3545; /* Red background on hover */
+    box-shadow: 0 0 10px #dc3545; /* Glowing effect */
+    border-radius: 0.25rem; /* Maintain the rounded corners on hover */
+  }
+  
