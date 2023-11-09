@@ -44,12 +44,22 @@ def gen_products(num_products):
         for pid in range(num_products):
             if pid % 100 == 0:
                 print(f'{pid}', end=' ', flush=True)
+
             name = fake.sentence(nb_words=4)[:-1]
+
             price = f'{str(fake.random_int(max=500))}.{fake.random_int(max=99):02}'
 
             description = fake.sentence(nb_words=20)[:-1]
-
-            available = fake.random_element(elements=('true', 'false'))
+            
+            available = 'true'
+            with open('db/generated/Seller_Inventory.csv', 'r') as inventory_file:
+                reader = csv.reader(inventory_file)
+                total_quantity = 0
+                for row in reader:
+                    if int(row[1]) == pid:
+                        total_quantity += int(row[2])
+                if total_quantity == 0:
+                    available = 'false'
             if available == 'true':
                 available_pids.append(pid)
 

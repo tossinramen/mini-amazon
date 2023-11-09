@@ -33,7 +33,7 @@ def get_products():
     # Start building the base query
     base_query = '''
     FROM products
-    WHERE available = true
+    WHERE (available = true OR available = false)
     '''
 
     # Add category filter if applicable
