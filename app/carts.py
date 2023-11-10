@@ -33,7 +33,7 @@ def update_all_quantities():
     print(request.form)
     for key in request.form:
         if key.startswith('quantity_'):
-            # Extract the identifiers from the key
+            # identifiers extracted
             _, id, pid, sid = key.split('_')
             # line_item = LineItem.get_by_id(id)
             # id, sid, pid = line_item[0], line_item[1]
