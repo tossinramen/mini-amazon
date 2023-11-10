@@ -2,48 +2,16 @@
 
 {% block content %}
 
-<br><br>
-<!-- User Search Form -->
-<form action="{{ url_for('users.redirect_to_user_purchases') }}" method="post">
-  <label for="user_id">Search User's Purchases by User ID:</label>
-  <input type="text" name="user_id" id="user_id" required>
-  <button type="submit" class="btn btn-primary">Search</button>
-</form>
-
-<br><br>
-
-<form action="{{ url_for('product_rating.redirect_to_user_reviews') }}" method="post">
-  <label for="user_id">Search User's Reviews by User ID:</label>
-  <input type="text" name="user_id" id="user_id" required>
-  <button type="submit" class="btn btn-primary">Search</button>
-</form>
-
-<br><br>
-<form action="{{ url_for('users.redirect_to_seller_inventory') }}" method="post">
-  <label for="user_id">Search Seller's Inventory by Seller's UID:</label>
-  <input type="text" name="user_id" id="user_id" required>
-  <button type="submit" class="btn btn-primary">Search</button>
-</form>
+<div class="text-center mt-5">
+  <form class="form-inline" action="{{ url_for('products.get_products') }}" method="post">
+    <label class="mr-2" for="keywords">Search for Products:</label>
+    <input type="text" class="form-control mr-2" name="keywords" id="keywords" required style="width: 50%;">
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+</div>
 <br><br>
 
-<form action="{{ url_for('carts.redirect_to_user_cart', uid=uid) }}" method="post">
-  <label for="user_id">Search User's Cart by User ID:</label>
-  <input type="text" name="user_id" id="user_id" required>
-  <button type="submit" class="btn btn-primary">Search</button>
-</form>
-
-<br><br>
-
-<form action="{{ url_for('products.get_products') }}" method="post">
-  <label for="keywords">Search for Products:</label>
-  <input type="text" name="keywords" id="keywords" required>
-  <button type="submit" class="btn btn-primary">Search</button>
-</form>
-
-
-<br><br>
-
-<h2>Products for sale:</h2>
+<h2 class="text-center">Products for sale:</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
@@ -53,19 +21,20 @@
     </tr>
   </thead>
   <tbody>
-    {% for product in avail_products%}
+    {% for product in avail_products %}
       <tr>
-        <th scope="row">{{product.id}}</th>
-        <td>{{product.name}}</td>
-        <td>{{product.price}}</td>
+        <th scope="row">{{ product.id }}</th>
+        <td>{{ product.name }}</td>
+        <td>{{ product.price }}</td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
 
 <br><br>
+
 {% if current_user.is_authenticated %}
-<h2>Your recent purchases:</h2>
+<h2 class="text-center">Your recent purchases:</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
@@ -75,17 +44,17 @@
     </tr>
   </thead>
   <tbody>
-    {% for purchase in purchase_history%}
+    {% for purchase in purchase_history %}
       <tr>
-        <th scope="row">{{purchase.id}}</th>
-        <td>{{purchase.pid}}</td>
-        <td>{{purchase.time_purchased}}</td>
+        <th scope="row">{{ purchase.id }}</th>
+        <td>{{ purchase.pid }}</td>
+        <td>{{ purchase.time_purchased }}</td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
 {% else %}
-<p><a href="{{ url_for('users.login') }}">Log in</a> to see your purchase history!</p>
+<p class="text-center"><a href="{{ url_for('users.login') }}">Log in</a> to see your purchase history!</p>
 {% endif %}
 
 {% endblock %}

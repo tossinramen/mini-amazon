@@ -13,24 +13,27 @@ class Product_Rating:
         self.time_reviewed = time_reviewed  
 
     @staticmethod
-    def get_last_5(uid):
+    def get_all(uid, limit, offset):
         rows = app.db.execute('''
             SELECT pr.uid as uid, pr.pid as pid, p.name as product_name, pr.description, pr.upvotes, pr.downvotes, pr.stars, pr.time_reviewed
             FROM Product_Rating pr
             JOIN Products p ON p.id = pr.pid
             WHERE uid = :uid
             ORDER BY time_reviewed DESC
-            ''', uid=uid)
+            LIMIT :limit OFFSET :offset
+            ''', uid=uid, limit=limit, offset=offset)
         if not rows:
             return None
         else:  
-            return [Product_Rating(*row) for row in rows[:5]]
+            return [Product_Rating(*row) for row in rows]
     
     @staticmethod
-    def get(id):
-        rows = app.db.execute("""
-            SELECT id, email, firstname, lastname
-            FROM Users
-            WHERE id = :id
-            """, id=id)
-        return User(*(rows[0])) if rows else None
+    def get(uid, pid):
+        rows = app.db.execute('''
+            SELECT pr.uid as uid, pr.pid as pid, p.name as product_name, pr.description, pr.upvotes, pr.downvotes, pr.stars, pr.time_reviewed
+            FROM Product_Rating pr
+            JOIN Products p ON p.id = pr.pid
+            WHERE uid = :uid and pid = :pid
+            ORDER BY time_reviewed DESC
+            ''', uid=uid, pid=pid)
+        return [Product_Rating(*row) for row in rows[:5]]

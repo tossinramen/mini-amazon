@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br><br>
+
+<body>
+  <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
+</body>
+
+<h2>Seller Reviews:</h2>
+<table class='table table-hover table-bordered container'>
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Seller Name</th>
+      <th scope="col">Stars</th>
+      <th scope="col">Description</th>
+      <th scope="col">Upvotes</th>
+      <th scope="col">Downvotes</th>
+      <th scope="col">Time Reviewed</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for rating in s_ratings%}
+      <tr>
+        <th scope="row">{{rating.seller_firstname}} {{rating.seller_lastname}}</th>
+        <td>{{rating.stars}}</td>
+        <td>{{rating.description}}</td>
+        <td>{{rating.upvotes}}</td>
+        <td>{{rating.downvotes}}</td>
+        <td>{{rating.time_reviewed}}</td>
+        <td><a href="{{ url_for('seller_rating.redirect_to_edit_review_sellers', sid=rating.sid) }}"  type="button" class="btn btn-light">Edit Review</a></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<head>
+    <title>Update Review</title>
+</head>
+<body>
+    {% for rating in s_ratings%}
+    <h1>Update Review</h1>
+    <form method="POST" action="/update_sr">
+        <label for="description">Description:</label>
+        <input type="text" name="description"><br>
+
+        <label for="stars">Stars:</label>
+        <input type="text" name="stars"><br>
+        
+        <input type="hidden" name="sid" value="{{rating.sid}}">
+        <input type="submit" value="Update">
+    </form>
+    {% endfor %}
+</body>
+
+{% endblock %}

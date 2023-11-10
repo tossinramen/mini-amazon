@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+<div class="container mt-5">
+    <div class="text-end mb-3">
+        <a href="{{ url_for('index.index') }}" class="btn btn-outline-primary">Home</a>
+    </div>
+
+    <div class="card">
+        <h5 class="card-header">Profile Information</h5>
+        <div class="card-body">
+            <p class="card-text"><strong>User ID:</strong> {{ user.id }}</p>
+            <p class="card-text"><strong>Email:</strong> {{ user.email }}</p>
+            <p class="card-text"><strong>First Name:</strong> {{ user.firstname }}</p>
+            <p class="card-text"><strong>Last Name:</strong> {{ user.lastname }}</p>
+            <p class="card-text"><strong>Address:</strong> {{ user.address or "Not provided" }}</p>
+            <p class="card-text"><strong>Account Balance:</strong> ${{ "%.2f"|format(user.balance) }}</p>
+        </div>
+        <body>
+        <a href="{{ url_for('product_rating.product_rating', uid=uid, page=1) }}" type="button" class="btn btn-light">Product Reviews</a>
+    </body>
+      
+    <body>
+        <a href="{{ url_for('seller_rating.seller_rating', uid=uid, page=1) }}" type="button" class="btn btn-light">Seller Reviews</a>
+    </body>
+    </div>
+</div>
+{% endblock %}

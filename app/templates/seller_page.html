@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <br><br>
+  <body>
+    <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
+    <a href="{{ url_for('users.my_past_seller_orders') }}" type="button" class="btn btn-light">Past Orders</a> <!-- Add this button -->
+  </body>
+  <br><br>
+  <h2>Seller's Inventory:</h2>
+  <table class='table table-hover table-bordered container'>
+    <thead class="thead-dark">
+      <tr>
+        <th scope="col">Product ID</th>
+        <th scope="col">Quantity</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in inventory %}
+        <tr>
+          <td>{{ item.pid }}</td>
+          <td>{{ item.quantity }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <nav aria-label="Page navigation">
+    <ul class="pagination">
+      {% set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) %}
+      {% for p in range(1, total_pages + 1) %}
+      <li class="page-item {% if p == page %}active{% endif %}">
+        <a class="page-link" href="{{ url_for('seller_inventory.inventory', uid=uid, page=p) }}">{{ p }}</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </nav>
+{% endblock %}

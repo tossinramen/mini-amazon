@@ -8,7 +8,7 @@
   <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
 </body>
 
-<h2>Product Reviews:</h2>
+<h2>Reviews:</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
@@ -30,24 +30,28 @@
         <td>{{rating.upvotes}}</td>
         <td>{{rating.downvotes}}</td>
         <td>{{rating.time_reviewed}}</td>
-        <td><a href="{{ url_for('product_rating.redirect_to_edit_review', pid=rating.pid) }}"  type="button" class="btn btn-light">Edit Review</a></td>
       </tr>
     {% endfor %}
   </tbody>
 </table>
-<nav aria-label="Page navigation">
-  <ul class="pagination">
-    {% set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) %}
-    {% for p in range(1, total_pages + 1) %}
-    <li class="page-item {% if p == page %}active{% endif %}">
-      <a class="page-link" href="{{ url_for('product_rating.product_rating', uid=uid, page=p) }}">{{ p }}</a>
-    </li>
+
+<head>
+    <title>Update Review</title>
+</head>
+<body>
+    {% for rating in ratings%}
+    <h1>Update Review</h1>
+    <form method="POST" action="/update_pr">
+        <label for="description">Description:</label>
+        <input type="text" name="description"><br>
+
+        <label for="stars">Stars:</label>
+        <input type="text" name="stars"><br>
+        
+        <input type="hidden" name="pid" value="{{rating.pid}}">
+        <input type="submit" value="Update">
+    </form>
     {% endfor %}
-  </ul>
-</nav>
-
-
-
+</body>
 
 {% endblock %}
-

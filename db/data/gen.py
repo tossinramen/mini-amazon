@@ -1,7 +1,6 @@
 from werkzeug.security import generate_password_hash
 import csv
 from faker import Faker
-import pandas as pd
 import random
 
 num_users = 100
@@ -13,8 +12,6 @@ num_seller_ratings = 1000
 Faker.seed(0)
 fake = Faker()
 
-# api_key = "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"
-# openai.api_key = api_key
 
 def get_csv_writer(f):
     return csv.writer(f, dialect='unix')
@@ -51,34 +48,12 @@ def gen_products(num_products):
         for pid in range(num_products):
             if pid % 100 == 0:
                 print(f'{pid}', end=' ', flush=True)
-
             name = fake.sentence(nb_words=4)[:-1]
-
-            price = f'{str(fake.random_int(max=500))}.{fake.random_int(max=99):02}'
-
-            description = fake.sentence(nb_words=20)[:-1]
-            
-            available = 'true'
-            with open('db/generated/Seller_Inventory.csv', 'r') as inventory_file:
-                reader = csv.reader(inventory_file)
-                total_quantity = 0
-                for row in reader:
-                    if int(row[1]) == pid:
-                        total_quantity += int(row[2])
-                if total_quantity == 0:
-                    available = 'false'
-            if available == 'true':
+            price = '{:.2f}'.format(fake.pydecimal(min_value=1, max_value=500, right_digits=2))
+            available = int(fake.random_element(elements=(1, 0)) == 1)  # Map True to 1 and False to 0
+            if available == 1:
                 available_pids.append(pid)
-
-            category = fake.random_element(elements=('Electronics', 
-                                                    'Fashion and Apparel', 
-                                                    'Home and Garden', 
-                                                    'Books and Media', 
-                                                    'Health and Beauty'))
-
-            image_url = f"https://picsum.photos/200/200/?random={pid}"
-
-            writer.writerow([pid, name, price, description, available, category, image_url])
+            writer.writerow([pid, name, price, available])
         print(f'{num_products} generated; {len(available_pids)} available')
     return available_pids
 
@@ -264,7 +239,7 @@ def gen_seller_ratings(num_seller_ratings, available_pids):
                     sid = fake.random_int(min=0, max=num_users-1)
                     combination = (uid, sid)
 
-                    if combination not in generated_combinations and uid != sid:
+                    if combination not in generated_combinations:
                         if id % 100 == 0:
                             print(f'{id}', end=' ', flush=True)
                         generated_combinations.add(combination)
