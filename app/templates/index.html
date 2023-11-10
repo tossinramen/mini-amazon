@@ -3,18 +3,6 @@
 {% block content %}
 
 <br><br>
-
-<br><br>
-
-<body>
-  <a href="{{ url_for('product_rating.product_rating', uid=uid, page=1) }}" type="button" class="btn btn-light">Product Reviews</a>
-</body>
-
-<body>
-  <a href="{{ url_for('seller_rating.seller_rating', uid=uid, page=1) }}" type="button" class="btn btn-light">Seller Reviews</a>
-</body>
-
-<br><br>
 <form action="{{ url_for('users.redirect_to_seller_inventory') }}" method="post">
   <label for="user_id">Search Seller's Inventory by Seller's UID:</label>
   <input type="text" name="user_id" id="user_id" required>
