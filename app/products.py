@@ -60,8 +60,41 @@ def get_products():
 
     # Execute the main query with search criteria and pagination
     main_query = 'SELECT id, name, price, description, available, category, image_url, \
-                (SELECT AVG(stars) FROM product_rating WHERE pid = products.id GROUP BY pid) AS avg_stars' + base_query
+                (SELECT AVG(stars) FROM product_rating WHERE pid = :pid GROUP BY pid) AS avg_stars' + base_query
     main_query += ' LIMIT :limit OFFSET :offset;'
     products = app.db.execute(main_query, limit=PER_PAGE, offset=offset, category=category)
 
     return render_template('products.html', products=products, keywords=keywords, total=total, per_page=PER_PAGE, page=page, category=category)
+
+@bp.route('/product_details', methods=['GET', 'POST'])
+def product_details(pid):
+    # product info from products table
+    product_query = '''
+    SELECT id, name, price, description, available, category, image_url, \
+    (SELECT AVG(stars) FROM product_rating WHERE pid = :pid GROUP BY pid) AS avg_stars
+    FROM products
+    WHERE id = :pid
+    '''
+    product_result = engine.execute(product_query, pid=pid).fetchone()
+
+    if result:
+        pname = result['name']
+        price = result['price']
+        description = result['description']
+        available = result['available']
+        category = result['category']
+        image_url = result['image_url']
+        avg_stars = result['avg_stars']
+
+    # list each seller and their current quantities
+    seller_dict = {}
+
+    seller_query = '''
+    SELECT uid, quantity
+    FROM seller_inventory
+    WHERE pid = :pid
+    '''
+
+    seller_result = engine.execute(seller_query, pid=pid).fetchone()
+
+    return render_template('detailed_product.html')
