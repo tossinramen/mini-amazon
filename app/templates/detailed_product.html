@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <br><br>
+  <div class="container">
+    <h2>{{ product.name }} Details</h2>
+
+    <div class="row">
+      <div class="col-md-6">
+        <img src="{{ product.image_url }}" alt="{{ product.name }} Image" class="img-fluid">
+      </div>
+      <div class="col-md-6">
+        <p><strong>Description:</strong> {{ product.description }}</p>
+        <p><strong>Price:</strong> ${{ product.price }}</p>
+        <p><strong>Category:</strong> {{ product.category }}</p>
+        <p>
+          <strong>Availability:</strong>
+          <span class="{% if product.available %}text-success{% else %}text-danger{% endif %}">
+            {% if product.available %}
+              In Stock
+            {% else %}
+              Out of Stock
+            {% endif %}
+          </span>
+        </p>
+      </div>
+    </div>
+
+    <br>
+
+    <h3>Sellers and Stock Quantities</h3>
+    <ul class="list-group">
+      {% for seller in product.sellers %}
+        <li class="list-group-item">
+          <strong>{{ seller.name }}</strong>
+          <p><strong>Quantity in Stock:</strong> {{ seller.quantity_in_stock }}</p>
+          <p><strong>Contact Information:</strong> {{ seller.contact_info }}</p>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endblock %}

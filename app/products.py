@@ -12,22 +12,31 @@ bp = Blueprint('products', __name__)
 
 PER_PAGE = 10
 
+def get_search_keywords():
+    if request.method == 'POST':
+        search = request.form.get('keywords')
+        if not search:
+            abort(400, "Search keywords required")
+        return search
+    elif request.method == 'GET':
+        return request.args.get('keywords', '')
+
+def build_base_query(category):
+    base_query = '''
+    FROM products
+    WHERE (available = true OR available = false)
+    '''
+    if category != 'all':
+        base_query += f' AND category = :category '
+    return base_query
+
 @bp.route('/get_products', methods=['GET', 'POST'])
 def get_products():
     page = request.args.get('page', 1, type=int)
     category = request.args.get('category', 'all') 
     offset = (page - 1) * PER_PAGE
-    search = ''
 
-    if request.method == 'POST':
-        search = request.form.get('keywords')  # Get the value from the form
-        if not search:
-            abort(400, "Search keywords required")
-        return redirect(url_for('products.get_products', page=1, keywords=search, category=category))
-
-    elif request.method == 'GET':
-        search = request.args.get('keywords', '')  # Get the value from the URL query parameter
-
+    search = get_search_keywords()
     keywords = search.split() if search else []
 
     # Start building the base query
@@ -50,7 +59,8 @@ def get_products():
     total = total_result[0][0] if total_result else 0
 
     # Execute the main query with search criteria and pagination
-    main_query = 'SELECT id, name, price, description, available, category, image_url ' + base_query
+    main_query = 'SELECT id, name, price, description, available, category, image_url, \
+                (SELECT AVG(stars) FROM product_rating WHERE pid = products.id GROUP BY pid) AS avg_stars' + base_query
     main_query += ' LIMIT :limit OFFSET :offset;'
     products = app.db.execute(main_query, limit=PER_PAGE, offset=offset, category=category)
 
