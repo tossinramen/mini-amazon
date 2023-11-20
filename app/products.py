@@ -54,7 +54,7 @@ def get_products():
     # Execute the main query with search criteria and pagination
     main_query = 'SELECT id, name, price, description, available, category, image_url, \
                 (SELECT AVG(stars) FROM product_rating WHERE product_rating.pid = products.id GROUP BY pid) AS avg_stars' + base_query
-    if sort_by:
+    if sort_by and not 'all' in sort_by:
         main_query += f' ORDER BY {sort_by}'
         if sort_order:
             main_query += f' {sort_order}'
