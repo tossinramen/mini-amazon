@@ -22,20 +22,28 @@
             {% endif %}
           </span>
         </p>
-        <p><strong>Average Rating:</strong> {{ avg_stars or 'Not rated' }}</p>
+        <p><strong>Average Rating:</strong>{{ '{:.2f}/5'.format(avg_stars) if avg_stars is not none else 'Not rated' }}</p>
       </div>
     </div>
-
     <br>
-
     <h3>Sellers and Stock Quantities</h3>
-    <ul class="list-group">
-      {% for uid, quantity in seller_info.items() %}
-        <li class="list-group-item">
-          <strong>Seller ID:</strong> {{ uid }}
-          <p><strong>Quantity in Stock:</strong> {{ quantity }}</p>
-        </li>
-      {% endfor %}
-    </ul>
+        <table class="table">
+        <thead>
+            <tr>
+            <th scope="col">Seller ID</th>
+            <th scope="col">Seller Name</th>
+            <th scope="col">Quantity in Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for seller in seller_info %}
+            <tr>
+                <td>{{ seller.uid }}</td>
+                <td>{{ seller.name }}</td>
+                <td>{{ seller.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
   </div>
 {% endblock %}

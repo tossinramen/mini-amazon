@@ -68,7 +68,7 @@ def get_products():
                                             page=page, 
                                             category=category)
 
-@bp.route('/product_details', methods=['GET', 'POST'])
+@bp.route('/product_details/<int:pid>', methods=['GET', 'POST'])
 def product_details(pid):
     # product info from products table
     product_query = '''
@@ -77,22 +77,24 @@ def product_details(pid):
     FROM products
     WHERE id = :pid
     '''
-    product_result = app.db.execute(product_query, pid=pid).fetchone()
+    product_result = app.db.execute(product_query, pid=pid)
 
-    if result:
-        name = result['name']
-        price = result['price']
-        description = result['description']
-        available = result['available']
-        category = result['category']
-        image_url = result['image_url']
-        avg_stars = result['avg_stars']
+    if product_result:
+        name = product_result[0][1]
+        price = product_result[0][2]
+        description = product_result[0][3]
+        available = product_result[0][4]
+        category = product_result[0][5]
+        image_url = product_result[0][6]
+        avg_stars = product_result[0][7]
 
     # list each seller and their current quantities
-    seller_query = '''
-    SELECT uid, quantity
+    seller_query = f'''
+    SELECT uid, quantity,
+           CONCAT(users.firstname, ' ', users.lastname) AS name
     FROM seller_inventory
-    WHERE pid = :pid
+    JOIN users ON users.id = seller_inventory.uid
+    WHERE pid = {pid}
     '''
 
     seller_info = app.db.execute(seller_query)
