@@ -21,19 +21,12 @@ def get_search_keywords():
     elif request.method == 'GET':
         return request.args.get('keywords', '')
 
-def build_base_query(category):
-    base_query = '''
-    FROM products
-    WHERE (available = true OR available = false)
-    '''
-    if category != 'all':
-        base_query += f' AND category = :category '
-    return base_query
-
 @bp.route('/get_products', methods=['GET', 'POST'])
 def get_products():
     page = request.args.get('page', 1, type=int)
     category = request.args.get('category', 'all') 
+    sort_by = request.args.get('sort_by')
+    sort_order = request.args.get('sort_order')
     offset = (page - 1) * PER_PAGE
 
     search = get_search_keywords()
@@ -60,11 +53,20 @@ def get_products():
 
     # Execute the main query with search criteria and pagination
     main_query = 'SELECT id, name, price, description, available, category, image_url, \
-                (SELECT AVG(stars) FROM product_rating WHERE pid = :pid GROUP BY pid) AS avg_stars' + base_query
+                (SELECT AVG(stars) FROM product_rating WHERE product_rating.pid = products.id GROUP BY pid) AS avg_stars' + base_query
+    if sort_by:
+        main_query += f' ORDER BY {sort_by}'
+        if sort_order:
+            main_query += f' {sort_order}'
     main_query += ' LIMIT :limit OFFSET :offset;'
     products = app.db.execute(main_query, limit=PER_PAGE, offset=offset, category=category)
 
-    return render_template('products.html', products=products, keywords=keywords, total=total, per_page=PER_PAGE, page=page, category=category)
+    return render_template('products.html', products=products, 
+                                            keywords=keywords, 
+                                            total=total, 
+                                            per_page=PER_PAGE, 
+                                            page=page, 
+                                            category=category)
 
 @bp.route('/product_details', methods=['GET', 'POST'])
 def product_details(pid):
@@ -75,10 +77,10 @@ def product_details(pid):
     FROM products
     WHERE id = :pid
     '''
-    product_result = engine.execute(product_query, pid=pid).fetchone()
+    product_result = app.db.execute(product_query, pid=pid).fetchone()
 
     if result:
-        pname = result['name']
+        name = result['name']
         price = result['price']
         description = result['description']
         available = result['available']
@@ -87,14 +89,19 @@ def product_details(pid):
         avg_stars = result['avg_stars']
 
     # list each seller and their current quantities
-    seller_dict = {}
-
     seller_query = '''
     SELECT uid, quantity
     FROM seller_inventory
     WHERE pid = :pid
     '''
 
-    seller_result = engine.execute(seller_query, pid=pid).fetchone()
+    seller_info = app.db.execute(seller_query)
 
-    return render_template('detailed_product.html')
+    return render_template('detailed_product.html', name=name, 
+                                                    price=price, 
+                                                    description=description, 
+                                                    available=available, 
+                                                    category=category,
+                                                    image_url=image_url,
+                                                    avg_stars=avg_stars,
+                                                    seller_info=seller_info)

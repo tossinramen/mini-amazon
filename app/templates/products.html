@@ -10,10 +10,11 @@
 
 <h2>Available Products</h2>
 
+<!-- Category Selection Form -->
 <div class="form-group">
-  <form action="{{ url_for('products.get_products', keywords=keywords, category=category) }}" method="GET" id="filterForm">
+  <form method="GET" id="categoryForm">
     <label for="categorySelect">Select a Category:</label>
-    <select class="form-control" name="category" id="categorySelect" onchange="this.form.submit()">
+    <select class="form-control" name="category" id="categorySelect">
       <option value="all">--</option>
       <option value="Electronics">Electronics</option>
       <option value="Fashion and Apparel">Fashion and Apparel</option>
@@ -21,9 +22,45 @@
       <option value="Books and Media">Books and Media</option>
       <option value="Health and Beauty">Health and Beauty</option>
     </select>
-    <button type="submit" class="btn btn-primary">Filter</button>
+    <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
+    <button type="button" class="btn btn-primary" onclick="submitCategoryForm()">Filter by Category</button>
   </form>
 </div>
+
+<!-- Sorting Form -->
+<div class="form-group">
+  <form method="GET" id="sortForm">
+    <label for="sortBy">Sort by:</label>
+    <select class="form-control" name="sort_by" id="sortBy">
+      <option value="all">--</option>
+      <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
+      <option value="avg_stars" {% if sort_by == 'avg_stars' %}selected{% endif %}>Average Rating</option>
+      <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Price</option>
+    </select>
+
+    <label for="sortOrder">Sort order:</label>
+    <select class="form-control" name="sort_order" id="sortOrder">
+      <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
+      <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
+    </select>
+
+    <input type="hidden" name="category" value="{{ category }}">
+    <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
+    <button type="button" class="btn btn-primary" onclick="submitSortForm()">Sort</button>
+  </form>
+</div>
+
+<script>
+  function submitCategoryForm() {
+    document.getElementById("categoryForm").action = "{{ url_for('products.get_products') }}";
+    document.getElementById("categoryForm").submit();
+  }
+
+  function submitSortForm() {
+    document.getElementById("sortForm").action = "{{ url_for('products.get_products') }}";
+    document.getElementById("sortForm").submit();
+  }
+</script>
 
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
@@ -34,30 +71,34 @@
       <th scope="col">Description</th>
       <th scope="col">Category</th>
       <th scope="col">Image</th>
+      <th scope="col">Rating</th>
       <th scope="col">Availability</th>
     </tr>
   </thead>
   <tbody>
     {% for product in products%}
-      <tr>
-        <th scope="row">{{product.id}}</th>
-        <td>{{product.name}}</td>
-        <td>{{product.price}}</td>
-        <td>{{product.description}}</td>
-        <td>{{product.category}}</td>
-        <td>
-          <img src="{{ product.image_url }}" alt="{{ product.name }} Image" width="100" height="100">
-        </td>
-        <td>
-          <span class="{% if product.available %}text-success{% else %}text-danger{% endif %}">
-            {% if product.available %}
-              In Stock
-            {% else %}
-              Out of Stock
-            {% endif %}
-          </span>
-        </td>
-      </tr>
+      <a href="{{ url_for('products.product_details', pid=product.id) }}" style="text-decoration: none; color: inherit;">
+        <tr>
+          <th scope="row">{{product.id}}</th>
+          <td>{{product.name}}</td>
+          <td>{{product.price}}</td>
+          <td>{{product.description}}</td>
+          <td>{{product.category}}</td>
+          <td>
+            <img src="{{ product.image_url }}" alt="{{ product.name }} Image" width="100" height="100">
+          </td>
+          <td>{{ '{:.2f}/5'.format(product.avg_stars) if product.avg_stars is not none else 'Not rated' }}</td>
+          <td>
+            <span class="{% if product.available %}text-success{% else %}text-danger{% endif %}">
+              {% if product.available %}
+                In Stock
+              {% else %}
+                Out of Stock
+              {% endif %}
+            </span>
+          </td>
+        </tr>
+      </a>
     {% endfor %}
   </tbody>
 </table>
