@@ -9,23 +9,6 @@
 <br><br>
 
 <h2>Product Search Results</h2>
-
-<!-- Category Selection Form
-<div class="form-group">
-  <form method="GET" id="categoryForm">
-    <label for="categorySelect">Select a Category:</label>
-    <select class="form-control" name="category" id="categorySelect">
-      <option value="all">--</option>
-      <option value="Electronics">Electronics</option>
-      <option value="Fashion and Apparel">Fashion and Apparel</option>
-      <option value="Home and Garden">Home and Garden</option>
-      <option value="Books and Media">Books and Media</option>
-      <option value="Health and Beauty">Health and Beauty</option>
-    </select>
-    <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
-    <button type="button" class="btn btn-primary" onclick="submitCategoryForm()">Filter by Category</button>
-  </form>
-</div> -->
 <style>
   .parent {
     margin-bottom: 20px;
@@ -48,11 +31,6 @@
   function submitFilterForm() {
     document.getElementById("filter").action = "{{ url_for('products.get_products') }}";
     document.getElementById("filter").submit();
-  }
-
-  function submitSortForm() {
-    document.getElementById("sortForm").action = "{{ url_for('products.get_products') }}";
-    document.getElementById("sortForm").submit();
   }
 </script>
 
@@ -89,6 +67,8 @@
       </details>
     {% endfor %}
     <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
+    <input type="hidden" name="sort_by" value="{{ sort_by }}">
+    <input type="hidden" name="sort_order" value="{{ sort_order }}">
     <button type="button" class="btn btn-primary" onclick="submitFilterForm()">Filter</button>
   </form>
 </div>
@@ -152,12 +132,20 @@
       <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
       <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
     </select>
-
-    <input type="hidden" name="category" value="{{ category }}">
     <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
+    <input type="hidden" name="selected_categories" value="{{ selected_categories }}">
+    <input type="hidden" name="selected_tags" value="{{ selected_tags }}">
+    <input type="hidden" name="selected_subtags" value="{{ selected_subtags }}">
     <button type="button" class="btn btn-primary" onclick="submitSortForm()">Sort</button>
   </form>
 </div>
+
+<script>
+  function submitSortForm() {
+    document.getElementById("sortForm").action = "{{ url_for('products.get_products') }}";
+    document.getElementById("sortForm").submit();
+  }
+</script>
 
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">

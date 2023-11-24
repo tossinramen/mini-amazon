@@ -1,13 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
-from werkzeug.urls import url_parse
-from flask_login import login_user, logout_user, current_user
-from werkzeug.exceptions import abort
-
-from .models.product import Product
+from flask import Blueprint, render_template, request, abort
 from flask import current_app as app
 
-
-from flask import Blueprint
 bp = Blueprint('products', __name__)
 
 PER_PAGE = 10
@@ -54,20 +47,15 @@ def get_search_keywords():
         return request.args.get('keywords', '')
 
 def category_tag_filter(base_query, selected, cat_or_tag):
-    for i in range(len(selected)):
-        if i == 0:
-            base_query += f' AND ({cat_or_tag} = \'{selected[i]}\''
-        else:
-            base_query += f' OR {cat_or_tag} = \'{selected[i]}\''
-        if i == len(selected)-1:
-            base_query += ')'
+    if selected and 'all' not in selected:
+        conditions = [f"{cat_or_tag} = '{value}'" for value in selected]
+        base_query += f" AND ({' OR '.join(conditions)})"
     return base_query
 
 @bp.route('/get_products', methods=['GET', 'POST'])
 def get_products():
     page = request.args.get('page', 1, type=int)
-    # category = request.args.get('category', 'all')
-    selected_categories = request.args.getlist('categories') 
+    selected_categories = request.args.getlist('categories')
     selected_tags = request.args.getlist('tags')
     selected_subtags = request.args.getlist('subtags')
     sort_by = request.args.get('sort_by')
@@ -84,12 +72,9 @@ def get_products():
     '''
 
     # Add category/tag filter if applicable
-    if selected_categories is not [] and 'all' not in selected_categories:
-        base_query = category_tag_filter(base_query, selected_categories, 'category')
-        if selected_tags is not []:
-            base_query = category_tag_filter(base_query, selected_tags, 'tag')
-            if selected_subtags is not []:
-                base_query = category_tag_filter(base_query, selected_subtags, 'subtag')
+    base_query = category_tag_filter(base_query, selected_categories, 'category')
+    base_query = category_tag_filter(base_query, selected_tags, 'tag')
+    base_query = category_tag_filter(base_query, selected_subtags, 'subtag')
 
     # Append search criteria to the base query
     for keyword in keywords:
@@ -103,22 +88,22 @@ def get_products():
     # Execute the main query with search criteria and pagination
     main_query = 'SELECT id, name, price, description, available, category, image_url, \
                 (SELECT AVG(stars) FROM product_rating WHERE product_rating.pid = products.id GROUP BY pid) AS avg_stars' + base_query
-    if sort_by and not 'all' in sort_by:
-        main_query += f' ORDER BY {sort_by}'
-        if sort_order:
-            main_query += f' {sort_order}'
+    if sort_by and sort_by != 'all' and sort_order:
+        main_query += f' ORDER BY {sort_by} {sort_order}'
     main_query += ' LIMIT :limit OFFSET :offset;'
     products = app.db.execute(main_query, limit=PER_PAGE, offset=offset)
 
-    return render_template('products.html', products=products, 
-                                            keywords=keywords, 
-                                            total=total, 
-                                            per_page=PER_PAGE, 
-                                            page=page, 
-                                            selected_categories=selected_categories,
-                                            selected_tags=selected_tags,
-                                            selected_subtags=selected_subtags,
-                                            tag_subtag_mapping=tag_subtag_mapping)
+    return render_template('products.html', products=products,
+                           keywords=keywords,
+                           total=total,
+                           per_page=PER_PAGE,
+                           page=page,
+                           selected_categories=selected_categories,
+                           selected_tags=selected_tags,
+                           selected_subtags=selected_subtags,
+                           tag_subtag_mapping=tag_subtag_mapping,
+                           sort_by=sort_by,
+                           sort_order=sort_order)
 
 @bp.route('/product_details/<int:pid>', methods=['GET', 'POST'])
 def product_details(pid):
@@ -151,11 +136,11 @@ def product_details(pid):
 
     seller_info = app.db.execute(seller_query)
 
-    return render_template('detailed_product.html', name=name, 
-                                                    price=price, 
-                                                    description=description, 
-                                                    available=available, 
-                                                    category=category,
-                                                    image_url=image_url,
-                                                    avg_stars=avg_stars,
-                                                    seller_info=seller_info)
+    return render_template('detailed_product.html', name=name,
+                           price=price,
+                           description=description,
+                           available=available,
+                           category=category,
+                           image_url=image_url,
+                           avg_stars=avg_stars,
+                           seller_info=seller_info)
