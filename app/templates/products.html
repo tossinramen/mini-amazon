@@ -10,7 +10,7 @@
 
 <h2>Product Search Results</h2>
 
-<!-- Category Selection Form -->
+<!-- Category Selection Form
 <div class="form-group">
   <form method="GET" id="categoryForm">
     <label for="categorySelect">Select a Category:</label>
@@ -25,14 +25,116 @@
     <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
     <button type="button" class="btn btn-primary" onclick="submitCategoryForm()">Filter by Category</button>
   </form>
+</div> -->
+<style>
+  .parent {
+    margin-bottom: 20px;
+  }
+
+  .indent-1 {
+    margin-left: 10px;
+  }
+
+  .indent-2 {
+    margin-left: 20px;
+  }
+
+  .indent-3 {
+    margin-left: 30px;
+  }
+</style>
+
+<script>
+  function submitFilterForm() {
+    document.getElementById("filter").action = "{{ url_for('products.get_products') }}";
+    document.getElementById("filter").submit();
+  }
+
+  function submitSortForm() {
+    document.getElementById("sortForm").action = "{{ url_for('products.get_products') }}";
+    document.getElementById("sortForm").submit();
+  }
+</script>
+
+<div class="parent">
+  <form METHOD="GET" id="filter">
+    {% for category, tags in tag_subtag_mapping.items() %}
+      <details class="indent-1">
+        <summary>
+          <label>
+            <input type="checkbox" name="categories" value="{{ category }}" {% if category in selected_categories %}checked{% endif %}>
+            {{ category }}
+          </label>
+        </summary>
+        <div class="indent-2">
+          {% for tag in tags.keys() %}
+            <details class="indent-2">
+              <summary>
+                <label>
+                  <input type="checkbox" name="tags" value="{{ tag }}" data-category="{{ category }}" {% if tag in selected_tags %}checked{% endif %}>
+                  {{ tag }}
+                </label>
+              </summary>
+              <div class="indent-3">
+                {% for subtag in tags[tag] %}
+                  <label>
+                    <input type="checkbox" name="subtags" value="{{ subtag }}" data-tag="{{ tag }}" {% if subtag in selected_subtags %}checked{% endif %}>
+                    {{ subtag }}
+                  </label><br>
+                {% endfor %}
+              </div>
+            </details>
+          {% endfor %}
+        </div>
+      </details>
+    {% endfor %}
+    <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
+    <button type="button" class="btn btn-primary" onclick="submitFilterForm()">Filter</button>
+  </form>
 </div>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Function to handle category checkbox change
+    function handleCategoryCheckboxChange(categoryCheckbox) {
+      const category = categoryCheckbox.value;
+      const tagCheckboxes = document.querySelectorAll(`[data-category="${category}"][name="tags"]`);
+      tagCheckboxes.forEach(tagCheckbox => {
+        tagCheckbox.checked = categoryCheckbox.checked;
+        handleTagCheckboxChange(tagCheckbox);
+      });
+    }
+
+    // Function to handle tag checkbox change
+    function handleTagCheckboxChange(tagCheckbox) {
+      const tag = tagCheckbox.value;
+      const subtagCheckboxes = document.querySelectorAll(`[data-tag="${tag}"][name="subtags"]`);
+      subtagCheckboxes.forEach(subtagCheckbox => {
+        subtagCheckbox.checked = tagCheckbox.checked;
+      });
+    }
+
+    // Attach event listeners to category checkboxes
+    const categoryCheckboxes = document.querySelectorAll('[name="categories"]');
+    categoryCheckboxes.forEach(categoryCheckbox => {
+      categoryCheckbox.addEventListener("change", () => handleCategoryCheckboxChange(categoryCheckbox));
+    });
+
+    // Attach event listeners to tag checkboxes
+    const tagCheckboxes = document.querySelectorAll('[name="tags"]');
+    tagCheckboxes.forEach(tagCheckbox => {
+      tagCheckbox.addEventListener("change", () => handleTagCheckboxChange(tagCheckbox));
+    });
+  });
+</script>
 
 <!-- Sorting Form -->
 <style>
-  /* Add this style to set the width of the dropdowns */
   .form-control {
-    width: 40%; /* Set the width to 50% */
-    display: inline-block; /* Display the dropdowns side by side */
+    width: 40%; 
+    display: inline-block;
   }
 </style>
 <div class="form-group">
@@ -56,18 +158,6 @@
     <button type="button" class="btn btn-primary" onclick="submitSortForm()">Sort</button>
   </form>
 </div>
-
-<script>
-  function submitCategoryForm() {
-    document.getElementById("categoryForm").action = "{{ url_for('products.get_products') }}";
-    document.getElementById("categoryForm").submit();
-  }
-
-  function submitSortForm() {
-    document.getElementById("sortForm").action = "{{ url_for('products.get_products') }}";
-    document.getElementById("sortForm").submit();
-  }
-</script>
 
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">

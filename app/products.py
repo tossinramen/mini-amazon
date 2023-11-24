@@ -12,6 +12,38 @@ bp = Blueprint('products', __name__)
 
 PER_PAGE = 10
 
+tag_subtag_mapping = {
+    'Electronics': {
+        'Smartphones': ('iPhone', 'Samsung Galaxy', 'Google Pixel', 'OnePlus'),
+        'Laptops': ('MacBook', 'Dell XPS', 'HP Spectre', 'Lenovo ThinkPad'),
+        'Headphones': ('Over-ear', 'In-ear', 'Wireless', 'Noise-canceling'),
+        'Smartwatches': ('Apple Watch', 'Samsung Galaxy Watch', 'Fitbit', 'Garmin'),
+        'Cameras': ('DSLR', 'Mirrorless', 'Point-and-Shoot', 'Action Cameras'),
+        'Gaming Consoles': ('PlayStation', 'Xbox', 'Nintendo Switch'),
+        'Smart Home': ('Smart Speakers', 'Smart Lights', 'Smart Thermostats', 'Smart Security Cameras')
+    },
+    'Fashion and Apparel': {
+        'Clothing': ('T-Shirts', 'Dresses', 'Jeans', 'Sweaters'),
+        'Footwear': ('Sneakers', 'Boots', 'Sandals', 'Heels'),
+        'Accessories': ('Hats', 'Scarves', 'Bags', 'Watches')
+    },
+    'Home and Garden': {
+        'Furniture': ('Sofas', 'Chairs', 'Tables', 'Beds'),
+        'Decor': ('Lamps', 'Candles', 'Mirrors', 'Wall Art'),
+        'Appliances': ('Refrigerators', 'Microwaves', 'Washing Machines', 'Coffee Makers')
+    },
+    'Books and Media': {
+        'Books': ('Fiction', 'Non-fiction', 'Mystery', 'Science Fiction'),
+        'Movies': ('Action', 'Comedy', 'Drama', 'Science Fiction'),
+        'Music': ('Rock', 'Pop', 'Hip Hop', 'Electronic')
+    },
+    'Health and Beauty': {
+        'Skincare': ('Cleansers', 'Moisturizers', 'Serums', 'Sunscreen'),
+        'Makeup': ('Lipstick', 'Eyeshadow', 'Foundation', 'Mascara'),
+        'Fitness': ('Yoga Mats', 'Dumbbells', 'Resistance Bands', 'Treadmills')
+    }
+}
+
 def get_search_keywords():
     if request.method == 'POST':
         search = request.form.get('keywords')
@@ -21,10 +53,23 @@ def get_search_keywords():
     elif request.method == 'GET':
         return request.args.get('keywords', '')
 
+def category_tag_filter(base_query, selected, cat_or_tag):
+    for i in range(len(selected)):
+        if i == 0:
+            base_query += f' AND ({cat_or_tag} = \'{selected[i]}\''
+        else:
+            base_query += f' OR {cat_or_tag} = \'{selected[i]}\''
+        if i == len(selected)-1:
+            base_query += ')'
+    return base_query
+
 @bp.route('/get_products', methods=['GET', 'POST'])
 def get_products():
     page = request.args.get('page', 1, type=int)
-    category = request.args.get('category', 'all') 
+    # category = request.args.get('category', 'all')
+    selected_categories = request.args.getlist('categories') 
+    selected_tags = request.args.getlist('tags')
+    selected_subtags = request.args.getlist('subtags')
     sort_by = request.args.get('sort_by')
     sort_order = request.args.get('sort_order')
     offset = (page - 1) * PER_PAGE
@@ -38,9 +83,13 @@ def get_products():
     WHERE (available = true OR available = false)
     '''
 
-    # Add category filter if applicable
-    if category != 'all':
-        base_query += f' AND category = :category '
+    # Add category/tag filter if applicable
+    if selected_categories is not [] and 'all' not in selected_categories:
+        base_query = category_tag_filter(base_query, selected_categories, 'category')
+        if selected_tags is not []:
+            base_query = category_tag_filter(base_query, selected_tags, 'tag')
+            if selected_subtags is not []:
+                base_query = category_tag_filter(base_query, selected_subtags, 'subtag')
 
     # Append search criteria to the base query
     for keyword in keywords:
@@ -48,7 +97,7 @@ def get_products():
 
     # Execute the count query with search criteria
     total_query = 'SELECT COUNT(*) ' + base_query
-    total_result = app.db.execute(total_query, category=category)
+    total_result = app.db.execute(total_query)
     total = total_result[0][0] if total_result else 0
 
     # Execute the main query with search criteria and pagination
@@ -59,14 +108,17 @@ def get_products():
         if sort_order:
             main_query += f' {sort_order}'
     main_query += ' LIMIT :limit OFFSET :offset;'
-    products = app.db.execute(main_query, limit=PER_PAGE, offset=offset, category=category)
+    products = app.db.execute(main_query, limit=PER_PAGE, offset=offset)
 
     return render_template('products.html', products=products, 
                                             keywords=keywords, 
                                             total=total, 
                                             per_page=PER_PAGE, 
                                             page=page, 
-                                            category=category)
+                                            selected_categories=selected_categories,
+                                            selected_tags=selected_tags,
+                                            selected_subtags=selected_subtags,
+                                            tag_subtag_mapping=tag_subtag_mapping)
 
 @bp.route('/product_details/<int:pid>', methods=['GET', 'POST'])
 def product_details(pid):
