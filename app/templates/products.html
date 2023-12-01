@@ -8,22 +8,144 @@
 </body>
 <br><br>
 
-<h2>Available Products</h2>
+<h2>Product Search Results</h2>
+<style>
+  .parent {
+    margin-bottom: 20px;
+  }
 
-<div class="form-group">
-  <form action="{{ url_for('products.get_products', keywords=keywords, category=category) }}" method="GET" id="filterForm">
-    <label for="categorySelect">Select a Category:</label>
-    <select class="form-control" name="category" id="categorySelect" onchange="this.form.submit()">
-      <option value="all">--</option>
-      <option value="Electronics">Electronics</option>
-      <option value="Fashion and Apparel">Fashion and Apparel</option>
-      <option value="Home and Garden">Home and Garden</option>
-      <option value="Books and Media">Books and Media</option>
-      <option value="Health and Beauty">Health and Beauty</option>
-    </select>
-    <button type="submit" class="btn btn-primary">Filter</button>
+  .indent-1 {
+    margin-left: 10px;
+  }
+
+  .indent-2 {
+    margin-left: 20px;
+  }
+
+  .indent-3 {
+    margin-left: 30px;
+  }
+</style>
+
+<script>
+  function submitFilterForm() {
+    document.getElementById("filter").action = "{{ url_for('products.get_products') }}";
+    document.getElementById("filter").submit();
+  }
+</script>
+
+<div class="parent">
+  <form METHOD="GET" id="filter">
+    {% for category, tags in tag_subtag_mapping.items() %}
+      <details class="indent-1">
+        <summary>
+          <label>
+            <input type="checkbox" name="categories" value="{{ category }}" {% if category in selected_categories %}checked{% endif %}>
+            {{ category }}
+          </label>
+        </summary>
+        <div class="indent-2">
+          {% for tag in tags.keys() %}
+            <details class="indent-2">
+              <summary>
+                <label>
+                  <input type="checkbox" name="tags" value="{{ tag }}" data-category="{{ category }}" {% if tag in selected_tags %}checked{% endif %}>
+                  {{ tag }}
+                </label>
+              </summary>
+              <div class="indent-3">
+                {% for subtag in tags[tag] %}
+                  <label>
+                    <input type="checkbox" name="subtags" value="{{ subtag }}" data-tag="{{ tag }}" {% if subtag in selected_subtags %}checked{% endif %}>
+                    {{ subtag }}
+                  </label><br>
+                {% endfor %}
+              </div>
+            </details>
+          {% endfor %}
+        </div>
+      </details>
+    {% endfor %}
+    <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
+    <input type="hidden" name="sort_by" value="{{ sort_by }}">
+    <input type="hidden" name="sort_order" value="{{ sort_order }}">
+    <button type="button" class="btn btn-primary" onclick="submitFilterForm()">Filter</button>
   </form>
 </div>
+
+
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Function to handle category checkbox change
+    function handleCategoryCheckboxChange(categoryCheckbox) {
+      const category = categoryCheckbox.value;
+      const tagCheckboxes = document.querySelectorAll(`[data-category="${category}"][name="tags"]`);
+      tagCheckboxes.forEach(tagCheckbox => {
+        tagCheckbox.checked = categoryCheckbox.checked;
+        handleTagCheckboxChange(tagCheckbox);
+      });
+    }
+
+    // Function to handle tag checkbox change
+    function handleTagCheckboxChange(tagCheckbox) {
+      const tag = tagCheckbox.value;
+      const subtagCheckboxes = document.querySelectorAll(`[data-tag="${tag}"][name="subtags"]`);
+      subtagCheckboxes.forEach(subtagCheckbox => {
+        subtagCheckbox.checked = tagCheckbox.checked;
+      });
+    }
+
+    // Attach event listeners to category checkboxes
+    const categoryCheckboxes = document.querySelectorAll('[name="categories"]');
+    categoryCheckboxes.forEach(categoryCheckbox => {
+      categoryCheckbox.addEventListener("change", () => handleCategoryCheckboxChange(categoryCheckbox));
+    });
+
+    // Attach event listeners to tag checkboxes
+    const tagCheckboxes = document.querySelectorAll('[name="tags"]');
+    tagCheckboxes.forEach(tagCheckbox => {
+      tagCheckbox.addEventListener("change", () => handleTagCheckboxChange(tagCheckbox));
+    });
+  });
+</script>
+
+<!-- Sorting Form -->
+<style>
+  .form-control {
+    width: 40%; 
+    display: inline-block;
+  }
+</style>
+<div class="form-group">
+  <form method="GET" id="sortForm">
+    <label for="sortBy">Sort by:</label>
+    <select class="form-control" name="sort_by" id="sortBy">
+      <option value="all">--</option>
+      <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name</option>
+      <option value="avg_stars" {% if sort_by == 'avg_stars' %}selected{% endif %}>Average Rating</option>
+      <option value="price" {% if sort_by == 'price' %}selected{% endif %}>Price</option>
+    </select>
+
+    <label for="sortOrder">Sort order:</label>
+    <select class="form-control" name="sort_order" id="sortOrder">
+      <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
+      <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
+    </select>
+    <input type="hidden" name="keywords" value="{{ ' '.join(keywords) }}">
+    <input type="hidden" name="selected_categories" value="{{ selected_categories }}">
+    <input type="hidden" name="selected_tags" value="{{ selected_tags }}">
+    <input type="hidden" name="selected_subtags" value="{{ selected_subtags }}">
+    <button type="button" class="btn btn-primary" onclick="submitSortForm()">Sort</button>
+  </form>
+</div>
+
+<script>
+  function submitSortForm() {
+    document.getElementById("sortForm").action = "{{ url_for('products.get_products') }}";
+    document.getElementById("sortForm").submit();
+  }
+</script>
 
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
@@ -34,12 +156,13 @@
       <th scope="col">Description</th>
       <th scope="col">Category</th>
       <th scope="col">Image</th>
+      <th scope="col">Rating</th>
       <th scope="col">Availability</th>
     </tr>
   </thead>
   <tbody>
     {% for product in products%}
-      <tr>
+      <tr onclick="window.location='{{ url_for('products.product_details', pid=product.id) }}';" style="cursor:pointer;">
         <th scope="row">{{product.id}}</th>
         <td>{{product.name}}</td>
         <td>{{product.price}}</td>
@@ -48,6 +171,7 @@
         <td>
           <img src="{{ product.image_url }}" alt="{{ product.name }} Image" width="100" height="100">
         </td>
+        <td>{{ '{:.2f}/5'.format(product.avg_stars) if product.avg_stars is not none else 'Not rated' }}</td>
         <td>
           <span class="{% if product.available %}text-success{% else %}text-danger{% endif %}">
             {% if product.available %}
@@ -61,6 +185,7 @@
     {% endfor %}
   </tbody>
 </table>
+
 <nav aria-label="Page navigation">
   <ul class="pagination">
     {% set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) %}

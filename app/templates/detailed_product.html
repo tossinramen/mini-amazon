@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2>{{ name }} Details</h2>
+
+    <div class="row">
+      <div class="col-md-6">
+        <img src="{{ image_url }}" alt="{{ name }} Image" class="img-fluid">
+      </div>
+      <div class="col-md-6">
+        <p><strong>Description:</strong> {{ description }}</p>
+        <p><strong>Price:</strong> ${{ price }}</p>
+        <p><strong>Category:</strong> {{ category }}</p>
+        <p>
+          <strong>Availability:</strong>
+          <span class="{% if available %}text-success{% else %}text-danger{% endif %}">
+            {% if available %}
+              In Stock
+            {% else %}
+              Out of Stock
+            {% endif %}
+          </span>
+        </p>
+        <p><strong>Average Rating:</strong> {{ '{:.2f}/5'.format(avg_stars) if avg_stars is not none else 'Not rated' }}</p>
+      </div>
+    </div>
+    <br>
+    <h3>Sellers and Stock Quantities</h3>
+        <table class="table">
+        <thead>
+            <tr>
+            <th scope="col">Seller ID</th>
+            <th scope="col">Seller Name</th>
+            <th scope="col">Quantity in Stock</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for seller in seller_info %}
+            <tr>
+                <td>{{ seller.uid }}</td>
+                <td>{{ seller.name }}</td>
+                <td>{{ seller.quantity }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+  </div>
+{% endblock %}
