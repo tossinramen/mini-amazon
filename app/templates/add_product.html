@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<body>
+    <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Cancel</a>
+</body>
+
+<h2>Add New Product:</h2>
+<form method="POST" action="/add_product">
+  <label for="name">Product Name:</label>
+  <input type="text" name="name" required><br>
+
+  <label for="price">Price:</label>
+  <input type="text" name="price" required><br>
+
+  <label for="description">Description:</label>
+  <input type="text" name="description" required><br>
+
+  <label for="category">Category:</label>
+  <input type="text" name="category" required><br>
+
+  <label for="tag">Category:</label>
+  <input type="text" name="tag" required><br>
+
+  <label for="subtag">Category:</label>
+  <input type="text" name="subtag" required><br>
+
+  <label for="picture">Picture link:</label>
+  <input type="text" name="picture" required><br>
+
+  <label for="quantity">Quantity:</label>
+  <input type="text" name="quantity"><br>
+
+  <input type="submit" value="Add Product">
+</form>
+
+{% endblock %}
