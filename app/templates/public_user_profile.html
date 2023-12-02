@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .profile-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px; 
+    }
+    .profile-table, .profile-table th, .profile-table td {
+        border: 1px solid #dee2e6;
+    }
+    .profile-table th, .profile-table td {
+        padding: 0.75rem;
+        text-align: left;
+        background-color: #ffffff; 
+        color: #212529; 
+    }
+    .profile-table th {
+        background-color: #e9ecef;
+        color: #333333; 
+    }
+    .profile-table tr:hover {background-color: #f6f6f6;}
+    .profile-table tbody tr:nth-of-type(odd) {background-color: #f2f2f2;} 
+
+   
+    .user-details {
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+        background-color: #ffffff;
+        color: #212529;
+        margin-bottom: 20px; 
+    }
+
+    .user-details strong {
+        color: #333333; 
+    }
+</style>
+
+<div class="container mt-4">
+    <h2>User Profile</h2>
+    <table class="profile-table">
+        <tbody>
+            <tr>
+                <th scope="row">User ID</th>
+                <td>{{ user_info.id }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Name</th>
+                <td>{{ user_info.firstname }} {{ user_info.lastname }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Email</th>
+                <td>{{ user_info.email }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    {% if seller_info %}
+    <h3>Seller Information:</h3>
+    <table class="profile-table">
+        <tbody>
+            <tr>
+                <th scope="row">Address</th>
+                <td>{{ seller_info.address }}</td>
+            </tr>
+            <tr>
+                <th scope="row">Average Rating</th>
+                <td>{{ seller_info.avg_rating }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Seller Reviews:</h3>
+    <table class="profile-table">
+        <thead>
+            <tr>
+                <th>Reviewer</th>
+                <th>Rating</th>
+                <th>Review</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in seller_reviews %}
+            <tr>
+                <td>{{ user_profile_link(review.reviewer_id, review.reviewer_name) }}</td>
+                <td>{{ review.stars }} stars</td>
+                <td>{{ review.description }}</td>
+                <td>{{ review.time_reviewed }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">No seller reviews found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <h3>Reviews by User:</h3>
+    <table class="profile-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Rating</th>
+                <th>Review</th>
+                <th>Seller</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for review in user_reviews %}
+            <tr>
+                <td>{{ review.name }}</td>
+                <td>{{ review.stars }} stars</td>
+                <td>{{ review.description }}</td>
+                <td>{{ user_profile_link(review.seller_id, review.seller_name) }}</td>
+                <td>{{ review.time_reviewed }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">No reviews found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+   
+</div>
+{% endblock %}

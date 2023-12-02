@@ -6,7 +6,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from .models.user import User
-
+from markupsafe import Markup
 
 
 
@@ -87,21 +87,20 @@ def profile():
     return render_template('profile.html', user=current_user)
 
 PER_PAGE = 10  
-
 @bp.route('/user_purchases/<int:uid>', methods=['GET'])
 @login_required
 def user_purchases(uid):
     page = request.args.get('page', 1, type=int)
     offset = (page - 1) * PER_PAGE
     total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM Purchases WHERE uid = :uid', uid=uid)
-    # Assuming the first element of the tuple is the 'total_count'.
     total = total_result[0][0] if total_result else 0
 
     query = '''
-    SELECT p.id AS purchase_id, pr.name AS product_name, b.qty, b.price, p.time_purchased, b.fulfilled
+    SELECT p.id AS purchase_id, pr.name AS product_name, b.qty, b.price, p.time_purchased, b.fulfilled, u.firstname || ' ' || u.lastname AS seller_name, u.id AS seller_id
     FROM Purchases p
     JOIN BoughtLineItems b ON p.id = b.id
     JOIN Products pr ON b.pid = pr.id
+    JOIN Users u ON b.sid = u.id
     WHERE p.uid = :uid
     ORDER BY p.time_purchased DESC
     LIMIT :limit OFFSET :offset
@@ -136,7 +135,6 @@ def update_email():
     new_email = request.form['email']
     update_query = 'UPDATE Users SET email = :email WHERE id = :user_id'
     app.db.execute(update_query, email=new_email, user_id=current_user.get_id())
-    flash('Email updated successfully.')
     return redirect(url_for('users.profile'))
 
 
@@ -196,3 +194,53 @@ def withdraw():
     update_query = 'UPDATE Users SET balance = :balance WHERE id = :user_id'
     app.db.execute(update_query, balance=str(new_balance), user_id=current_user.get_id())
     return redirect(url_for('users.profile'))
+
+
+@bp.route('/user/<int:user_id>', methods=['GET'])
+def public_user_profile(user_id):
+    user_query = 'SELECT id, firstname, lastname, email FROM Users WHERE id = :user_id'
+    user_info_result = app.db.execute(user_query, user_id=user_id)
+    user_info = user_info_result[0] if user_info_result else None
+
+    reviews_query = '''
+    SELECT pr.name, r.description, r.stars, r.time_reviewed, s.uid AS seller_id, u.firstname || ' ' || u.lastname AS seller_name
+    FROM Product_Rating r
+    JOIN Products pr ON r.pid = pr.id
+    JOIN Seller_Inventory si ON pr.id = si.pid
+    JOIN Sellers s ON si.uid = s.uid
+    JOIN Users u ON s.uid = u.id
+    WHERE r.uid = :user_id
+    '''
+    user_reviews = app.db.execute(reviews_query, user_id=user_id)
+
+    is_seller_query = 'SELECT COUNT(*) FROM Sellers WHERE uid = :user_id'
+    is_seller_result = app.db.execute(is_seller_query, user_id=user_id)
+    is_seller = is_seller_result[0][0] > 0 if is_seller_result else False
+
+    seller_info = None
+    seller_reviews = None
+    if is_seller:
+        seller_query = '''
+        SELECT address, avg_rating
+        FROM Users
+        JOIN Sellers ON Users.id = Sellers.uid
+        WHERE Users.id = :user_id
+        '''
+        seller_info_result = app.db.execute(seller_query, user_id=user_id)
+        seller_info = seller_info_result[0] if seller_info_result else None
+        
+        seller_reviews_query = '''
+        SELECT u.id AS reviewer_id, u.firstname || ' ' || u.lastname AS reviewer_name, sr.description, sr.stars, sr.time_reviewed
+        FROM Seller_Rating sr
+        JOIN Users u ON sr.uid = u.id
+        WHERE sr.sid = :user_id
+        '''
+        seller_reviews = app.db.execute(seller_reviews_query, user_id=user_id)
+
+    return render_template('public_user_profile.html', user_info=user_info, user_reviews=user_reviews, seller_info=seller_info, seller_reviews=seller_reviews)
+
+@bp.context_processor
+def context_processor():
+    def user_profile_link(user_id, user_name):
+        return Markup(f'<a href="{url_for("users.public_user_profile", user_id=user_id)}">{user_name}</a>')
+    return dict(user_profile_link=user_profile_link)
