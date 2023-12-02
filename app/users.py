@@ -1,3 +1,4 @@
+from decimal import Decimal
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app as app
 from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user, login_required
@@ -5,6 +6,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from .models.user import User
+
 
 
 
@@ -120,3 +122,56 @@ def my_past_seller_orders():
 def redirect_to_user_purchases():
     user_id = request.form.get('user_id')
     return redirect(url_for('users.user_purchases', uid=user_id))
+
+
+
+@bp.route('/manage_profile')
+@login_required
+def manage_profile():
+    return render_template('manage_profile.html', user=current_user)
+
+@bp.route('/update_email', methods=['POST'])
+@login_required
+def update_email():
+    new_email = request.form['email']
+    update_query = 'UPDATE Users SET email = :email WHERE id = :user_id'
+    app.db.execute(update_query, email=new_email, user_id=current_user.get_id())
+    flash('Email updated successfully.')
+    return redirect(url_for('users.profile'))
+
+
+@bp.route('/update_firstname', methods=['POST'])
+@login_required
+def update_firstname():
+    new_firstname = request.form['firstname']
+    update_query = 'UPDATE Users SET firstname = :firstname WHERE id = :user_id'
+    app.db.execute(update_query, firstname=new_firstname, user_id=current_user.get_id())
+    flash('First name updated successfully.')
+    return redirect(url_for('users.profile'))
+
+@bp.route('/update_lastname', methods=['POST'])
+@login_required
+def update_lastname():
+    new_lastname = request.form['lastname']
+    update_query = 'UPDATE Users SET lastname = :lastname WHERE id = :user_id'
+    app.db.execute(update_query, lastname=new_lastname, user_id=current_user.get_id())
+    flash('Last name updated successfully.')
+    return redirect(url_for('users.profile'))
+
+@bp.route('/update_address', methods=['POST'])
+@login_required
+def update_address():
+    new_address = request.form['address']
+    update_query = 'UPDATE Users SET address = :address WHERE id = :user_id'
+    app.db.execute(update_query, address=new_address, user_id=current_user.get_id())
+    flash('Address updated successfully.')
+    return redirect(url_for('users.profile'))
+
+@bp.route('/update_balance', methods=['POST'])
+@login_required
+def update_balance():
+    new_balance = Decimal(request.form['balance'])
+    update_query = 'UPDATE Users SET balance = :balance WHERE id = :user_id'
+    app.db.execute(update_query, balance=str(new_balance), user_id=current_user.get_id())
+    flash('Account balance updated successfully.')
+    return redirect(url_for('users.profile'))
