@@ -146,7 +146,7 @@ def update_firstname():
     new_firstname = request.form['firstname']
     update_query = 'UPDATE Users SET firstname = :firstname WHERE id = :user_id'
     app.db.execute(update_query, firstname=new_firstname, user_id=current_user.get_id())
-    flash('First name updated successfully.')
+   
     return redirect(url_for('users.profile'))
 
 @bp.route('/update_lastname', methods=['POST'])
@@ -155,7 +155,7 @@ def update_lastname():
     new_lastname = request.form['lastname']
     update_query = 'UPDATE Users SET lastname = :lastname WHERE id = :user_id'
     app.db.execute(update_query, lastname=new_lastname, user_id=current_user.get_id())
-    flash('Last name updated successfully.')
+    
     return redirect(url_for('users.profile'))
 
 @bp.route('/update_address', methods=['POST'])
@@ -164,14 +164,35 @@ def update_address():
     new_address = request.form['address']
     update_query = 'UPDATE Users SET address = :address WHERE id = :user_id'
     app.db.execute(update_query, address=new_address, user_id=current_user.get_id())
-    flash('Address updated successfully.')
+  
     return redirect(url_for('users.profile'))
 
 @bp.route('/update_balance', methods=['POST'])
 @login_required
 def update_balance():
-    new_balance = Decimal(request.form['balance'])
+    return render_template('balance_management.html', user=current_user)
+
+@bp.route('/deposit', methods=['POST'])
+@login_required
+def deposit():
+    deposit_amount = Decimal(request.form['deposit_amount'])
+    current_balance = current_user.balance
+    new_balance = current_balance + deposit_amount
     update_query = 'UPDATE Users SET balance = :balance WHERE id = :user_id'
     app.db.execute(update_query, balance=str(new_balance), user_id=current_user.get_id())
-    flash('Account balance updated successfully.')
+ 
+    return redirect(url_for('users.profile'))
+
+@bp.route('/withdraw', methods=['POST'])
+@login_required
+def withdraw():
+    withdraw_amount = Decimal(request.form['withdraw_amount'])
+    current_balance = current_user.balance
+    if withdraw_amount > current_balance:
+    
+        return redirect(url_for('users.update_balance'))
+
+    new_balance = current_balance - withdraw_amount
+    update_query = 'UPDATE Users SET balance = :balance WHERE id = :user_id'
+    app.db.execute(update_query, balance=str(new_balance), user_id=current_user.get_id())
     return redirect(url_for('users.profile'))
