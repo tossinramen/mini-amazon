@@ -276,3 +276,61 @@ def context_processor():
         return Markup(f'<a href="{url_for("users.public_user_profile", user_id=user_id)}">{user_name}</a>')
     return dict(user_profile_link=user_profile_link)
 
+@bp.route('/user_spending/<int:uid>', methods=['GET'])
+@login_required
+def user_spending(uid):
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    offset = (page - 1) * per_page
+
+    user_info_query = 'SELECT firstname, lastname FROM Users WHERE id = :uid'
+    user_info_result = app.db.execute(user_info_query, uid=uid)
+    if user_info_result:
+        firstname, lastname = user_info_result[0]
+        user_name = f"{firstname} {lastname}"
+    else:
+        user_name = "Unknown User"
+
+    spending_query = '''
+    SELECT 
+        EXTRACT(YEAR FROM p.time_purchased) AS year, 
+        pr.category, 
+        SUM(b.qty * b.price) AS total_spent
+    FROM 
+        Purchases p
+    JOIN 
+        BoughtLineItems b ON p.id = b.id
+    JOIN 
+        Products pr ON b.pid = pr.id
+    WHERE 
+        p.uid = :uid
+    GROUP BY 
+        year, pr.category
+    ORDER BY 
+        year DESC, pr.category
+    LIMIT :limit OFFSET :offset
+    '''
+    spending_data = app.db.execute(spending_query, uid=uid, limit=per_page, offset=offset)
+
+    count_query = '''
+    SELECT COUNT(*)
+    FROM (
+        SELECT 1
+        FROM Purchases p
+        JOIN BoughtLineItems b ON p.id = b.id
+        JOIN Products pr ON b.pid = pr.id
+        WHERE p.uid = :uid
+        GROUP BY EXTRACT(YEAR FROM p.time_purchased), pr.category
+    ) AS count_subquery
+    '''
+    total_result = app.db.execute(count_query, uid=uid)
+    total = total_result[0][0] if total_result else 0
+
+    return render_template('user_spending.html', 
+                           spending_data=spending_data, 
+                           user_name=user_name, 
+                           uid=uid, 
+                           page=page, 
+                           per_page=per_page, 
+                           total=total)
+
