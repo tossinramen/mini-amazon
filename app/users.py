@@ -91,23 +91,54 @@ PER_PAGE = 10
 @login_required
 def user_purchases(uid):
     page = request.args.get('page', 1, type=int)
+    item = request.args.get('item', type=str)
+    seller = request.args.get('seller', type=str)
+    date = request.args.get('date', type=str)
     offset = (page - 1) * PER_PAGE
-    total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM Purchases WHERE uid = :uid', uid=uid)
-    total = total_result[0][0] if total_result else 0
 
-    query = '''
+    base_query = '''
     SELECT p.id AS purchase_id, pr.name AS product_name, b.qty, b.price, p.time_purchased, b.fulfilled, u.firstname || ' ' || u.lastname AS seller_name, u.id AS seller_id
     FROM Purchases p
     JOIN BoughtLineItems b ON p.id = b.id
     JOIN Products pr ON b.pid = pr.id
     JOIN Users u ON b.sid = u.id
     WHERE p.uid = :uid
-    ORDER BY p.time_purchased DESC
-    LIMIT :limit OFFSET :offset
     '''
-    user_purchases = app.db.execute(query, uid=uid, limit=PER_PAGE, offset=offset)
+    filter_clauses = []
+    params = {'uid': uid}
 
-    return render_template('user_purchases.html', user_purchases=user_purchases, total=total, page=page, per_page=PER_PAGE, uid=uid)
+    if item:
+        filter_clauses.append("pr.name ILIKE :item")
+        params['item'] = f"%{item}%"
+    if seller:
+        filter_clauses.append("(u.firstname || ' ' || u.lastname) ILIKE :seller")
+        params['seller'] = f"%{seller}%"
+    if date:
+        filter_clauses.append("CAST(p.time_purchased AS DATE) = :date")
+        params['date'] = date
+
+    if filter_clauses:
+        base_query += ' AND ' + ' AND '.join(filter_clauses)
+
+    base_query += ' ORDER BY p.time_purchased DESC LIMIT :limit OFFSET :offset'
+    user_purchases = app.db.execute(base_query, **params, limit=PER_PAGE, offset=offset)
+
+    
+    count_query = '''
+    SELECT COUNT(*)
+    FROM Purchases p
+    JOIN BoughtLineItems b ON p.id = b.id
+    JOIN Products pr ON b.pid = pr.id
+    JOIN Users u ON b.sid = u.id
+    WHERE p.uid = :uid
+    '''
+    if filter_clauses:
+        count_query += ' AND ' + ' AND '.join(filter_clauses)
+    total_result = app.db.execute(count_query, **params)
+    total = total_result[0][0] if total_result else 0
+
+    return render_template('user_purchases.html', user_purchases=user_purchases, total=total, page=page, per_page=PER_PAGE, uid=uid, item=item, seller=seller, date=date)
+
 
 @bp.route('/seller_page')
 def redirect_to_seller_inventory():
@@ -244,3 +275,4 @@ def context_processor():
     def user_profile_link(user_id, user_name):
         return Markup(f'<a href="{url_for("users.public_user_profile", user_id=user_id)}">{user_name}</a>')
     return dict(user_profile_link=user_profile_link)
+
