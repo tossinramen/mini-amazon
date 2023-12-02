@@ -55,11 +55,11 @@ def category_tag_filter(base_query, selected, cat_or_tag):
 @bp.route('/get_products', methods=['GET', 'POST'])
 def get_products():
     page = request.args.get('page', 1, type=int)
-    selected_categories = request.args.getlist('categories')
-    selected_tags = request.args.getlist('tags')
-    selected_subtags = request.args.getlist('subtags')
-    sort_by = request.args.get('sort_by')
-    sort_order = request.args.get('sort_order')
+    selected_categories = request.args.getlist('categories') or ['all']
+    selected_tags = request.args.getlist('tags') or ['all']
+    selected_subtags = request.args.getlist('subtags') or ['all']
+    sort_by = request.args.get('sort_by', 'all')
+    sort_order = request.args.get('sort_order', '')
     offset = (page - 1) * PER_PAGE
 
     search = get_search_keywords()
@@ -88,9 +88,14 @@ def get_products():
     # Execute the main query with search criteria and pagination
     main_query = 'SELECT id, name, price, description, available, category, image_url, \
                 (SELECT AVG(stars) FROM product_rating WHERE product_rating.pid = products.id GROUP BY pid) AS avg_stars' + base_query
-    if sort_by and sort_by != 'all' and sort_order:
-        main_query += f' ORDER BY {sort_by} {sort_order}'
+    
+    if sort_by and sort_by != 'all' and sort_by != 'None':
+        main_query += f' ORDER BY {sort_by}'
+        if sort_order and sort_order != 'None':
+            main_query += f' {sort_order}'
+
     main_query += ' LIMIT :limit OFFSET :offset;'
+
     products = app.db.execute(main_query, limit=PER_PAGE, offset=offset)
 
     return render_template('products.html', products=products,
