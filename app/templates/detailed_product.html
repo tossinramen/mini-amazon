@@ -23,27 +23,87 @@
           </span>
         </p>
         <p><strong>Average Rating:</strong> {{ '{:.2f}/5'.format(avg_stars) if avg_stars is not none else 'Not rated' }}</p>
+        <label for="sellerSelect">Select Seller:</label>
+        <select id="sellerSelect" name="seller_id">
+          <option value="" disabled selected>Select a Seller</option>
+          {% for seller in seller_info %}
+            <option value="{{ seller.uid }}" data-stock="{{ seller.quantity }}">{{ seller.name }}</option>
+          {% endfor %}
+        </select>
+        <br>
+        <br>
+        <label for="quantityInput">Quantity:</label>
+        <input type="number" id="quantityInput" name="quantity" value="1" min="1">
+        <br>
+        <br>
+        <form action="{% url_for('carts.cart') %}" method="post" onsubmit="return validateForm()">
+          {% csrf_token %}
+          <input type="hidden" id="productInput" name="product_id" value="{{ product_id }}">
+          <button type="submit" class="btn btn-primary">Add to Cart</button>
+        </form>
       </div>
     </div>
     <br>
     <h3>Sellers and Stock Quantities</h3>
-        <table class="table">
-        <thead>
-            <tr>
-            <th scope="col">Seller ID</th>
-            <th scope="col">Seller Name</th>
-            <th scope="col">Quantity in Stock</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for seller in seller_info %}
-            <tr>
-                <td>{{ seller.uid }}</td>
-                <td>{{ seller.name }}</td>
-                <td>{{ seller.quantity }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        </table>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Seller ID</th>
+          <th scope="col">Seller Name</th>
+          <th scope="col">Quantity in Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for seller in seller_info %}
+          <tr>
+            <td>{{ seller.uid }}</td>
+            <td>{{ seller.name }}</td>
+            <td>{{ seller.quantity }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <script>
+      function updateQuantity() {
+        var selectedSeller = document.getElementById("sellerSelect");
+        var quantityInput = document.getElementById("quantityInput");
+        var selectedOption = selectedSeller.options[selectedSeller.selectedIndex];
+
+        // Check if a seller is selected
+        if (selectedOption.value === "") {
+          alert("Please select a seller first.");
+          quantityInput.value = 1;  // Reset quantity to 1 when no seller is selected
+          return;
+        }
+
+        var maxQuantity = selectedOption.getAttribute("data-stock");
+        quantityInput.setAttribute("max", maxQuantity);
+        quantityInput.value = 1;  // Reset quantity to 1 when the seller changes
+      }
+
+      function validateForm() {
+        var selectedSeller = document.getElementById("sellerSelect");
+        var quantityInput = document.getElementById("quantityInput");
+        var selectedOption = selectedSeller.options[selectedSeller.selectedIndex];
+        var maxQuantity = selectedOption.getAttribute("data-stock");
+        var selectedQuantity = quantityInput.value;
+
+        // Check if a seller is selected
+        if (selectedOption.value === "") {
+          alert("Please select a seller first.");
+          return false;
+        }
+
+        // Check if the quantity exceeds the available stock
+        if (selectedQuantity > maxQuantity) {
+          alert("Quantity exceeds the available stock. Please select a lower quantity.");
+          return false;
+        }
+
+        // Form is valid, proceed with submission
+        return true;
+      }
+    </script>
   </div>
 {% endblock %}
