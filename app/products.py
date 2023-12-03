@@ -149,3 +149,78 @@ def product_details(pid):
                            image_url=image_url,
                            avg_stars=avg_stars,
                            seller_info=seller_info)
+
+def add_to_cart(uid, pid, seller_id, quantity):
+    # subtract from seller inventory (sid, pid, quantity)
+    change_seller_inventory(pid, seller_id, quantity)
+
+    # add to cart line items (cid, sid, pid, quantity, price)
+        # get cart id from carts (cid, uid)
+
+    cart_id = get_cart_id(uid)
+    
+    search_cart_query = f'''
+    SELECT id
+    FROM cartlineitems
+    WHERE sid = {seller_id} AND pid = {pid} AND id = {cid}
+    '''
+    search_cart = app.db.execute(search_cart_query)
+    if search_cart.rowcount == 0:
+        cart_query = f'''
+        INSERT INTO cartlineitems
+        VALUES (
+            {cart_id}, {seller_id}, {pid}, {quantity}, (
+                SELECT price
+                FROM products
+                WHERE id = {pid}
+            )
+        )
+        '''
+    else:
+        cart_query = f'''
+        UPDATE cartlineitems
+        SET qty = qty + {quantity}
+        WHERE sid = {seller_id} AND pid = {pid} AND id = {cart_id}
+        '''
+    app.db.execute(cart_query)
+
+def change_seller_inventory(pid, seller_id, quantity):
+    seller_quantity_query = f'''
+    SELECT quantity
+    FROM seller_inventory
+    WHERE uid = {seller_id} AND pid = {pid}
+    '''
+    result = db.app.execute(seller_quantity_query)
+    if result.rowcount == 0:
+        raise ValueError("Seller does not sell this product.")
+    seller_quantity = result[0][0]
+    if seller_quantity >= quantity:
+        seller_query = f'''
+        UPDATE seller_inventory
+        SET quantity = quantity - {quantity}
+        WHERE uid = {seller_id} AND pid = {pid}
+        '''
+        app.db.execute(seller_query)
+        if seller_quantity == quantity:
+            product_query = f'''
+            UPDATE products
+            SET available = false
+            WHERE id = {pid}
+            '''
+            app.db.execute(product_query)
+    else:
+        raise ValueError("Seller does not have enough inventory for requested quantity.")
+
+def get_cart_id(uid):
+    cart_query = f'''
+    SELECT id
+    FROM carts
+    WHERE uid = {uid}
+    '''
+    result = app.db.execute(cart_query)
+    if result.rowcount == 0:
+        raise ValueError("User does not have a cart.")
+    return result[0][0]
+        
+    
+
