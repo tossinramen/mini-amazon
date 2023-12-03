@@ -4,8 +4,49 @@
   <br><br>
   <body>
     <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
-    <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a> <!-- Add this button -->
+    <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a>
   </body>
+
+  <div class="container">
+    <div class="row">
+      <!-- Search Form -->
+      <div class="col-md-6">
+        <form method="GET" id="searchForm">
+          <div class="form-group">
+            <label for="searchType">Search Type:</label>
+            <select class="form-control" name="search_type" id="searchType">
+              <option value="order_id" {% if search_type == 'order_id' %}selected{% endif %}>Order ID</option>
+              <option value="product_id" {% if search_type == 'product_id' %}selected{% endif %}>Product ID</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="searchOrder">Search ID:</label>
+            <div class="d-flex">
+              <input type="text" class="form-control" name="search_order" id="searchOrder" value="{{ search_order }}" style="width: 300px;">
+              <button type="button" class="btn btn-primary ml-2" onclick="submitSearchForm()">Search</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Sort Controls -->
+      <div class="col-md-6">
+        <form method="GET" id="sortForm">
+          <div class="form-group">
+            <label for="sortOrder">Sort order:</label>
+            <div class="d-flex">
+              <select class="form-control" name="sort_order" id="sortOrder">
+                <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
+                <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
+              </select>
+              <button type="button" class="btn btn-primary ml-2" onclick="submitSortForm()">Sort</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <br><br>
   <h2>Seller's Orders:</h2>
   <table class='table table-hover table-bordered container'>
@@ -41,4 +82,18 @@
       {% endfor %}
     </ul>
   </nav>
+
+  <script>
+    function submitSearchForm() {
+      document.getElementById("searchForm").action = "{{ url_for('index.index') }}";
+      document.getElementById("searchForm").submit();
+    }
+
+    function submitSortForm() {
+      document.getElementById("sortForm").action = "{{ url_for('index.index') }}";
+      document.getElementById("sortForm").submit();
+    }
+
+  </script>
+
 {% endblock %}

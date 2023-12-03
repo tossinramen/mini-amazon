@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app as app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, current_app as app
 from werkzeug.urls import url_parse
 from flask_login import login_user, logout_user, current_user, login_required
 from flask_wtf import FlaskForm
@@ -29,6 +29,52 @@ def past_seller_orders(uid):
     page = request.args.get('page', 1, type=int)
     offset = (page - 1) * PER_PAGE
     total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM BoughtLineItems WHERE sid = :uid', uid=uid)
+    # Assuming the first element of the tuple is the 'total_count'.
+    total = total_result[0][0] if total_result else 0
+
+    query = """
+        SELECT id, sid, pid, qty, price, fulfilled
+        FROM BoughtLineItems
+        WHERE sid = :uid
+        LIMIT :limit OFFSET :offset
+    """
+    
+    seller_orders = app.db.execute(query, uid=uid, limit=PER_PAGE, offset=offset)  
+    
+    return render_template('seller_orders.html', inventory=seller_orders, total=total,
+                           page=page, per_page=PER_PAGE, uid=uid)
+
+
+def get_search_keywords():
+    if request.method == 'POST':
+        search = request.form.get('search_order')
+        if not search:
+            abort(400, "Search keywords required")
+        return search
+    elif request.method == 'GET':
+        return request.args.get('search_order', '')
+
+def category_tag_filter(base_query, selected, cat_or_tag):
+    if selected and 'all' not in selected:
+        conditions = [f"{cat_or_tag} = '{value}'" for value in selected]
+        base_query += f" AND ({' OR '.join(conditions)})"
+    return base_query
+
+@bp.route('/redirect_to_filtered_orders', methods=['GET', 'POST'])
+def redirect_to_filtered_orders():
+    uid = redirect_to_filtered_orders
+    return redirect(url_for('seller_inventory.filtered_orders', uid=uid))
+
+@bp.route('/filtered_orders/<int:uid>')
+def filtered_orders(uid):
+    PER_PAGE = 10 
+    page = request.args.get('page', 1, type=int)
+    sort_by = request.args.get('sort_by', 'all')
+    search_type = request.args.get('search_type', 'all')
+    search = get_search_keywords()
+    offset = (page - 1) * PER_PAGE
+    
+    # total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM BoughtLineItems WHERE sid = :uid', uid=uid)
     # Assuming the first element of the tuple is the 'total_count'.
     total = total_result[0][0] if total_result else 0
 
