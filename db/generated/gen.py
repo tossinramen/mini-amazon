@@ -38,7 +38,7 @@ def gen_users(num_users):
             firstname = name_components[0]
             lastname = name_components[-1]
             address = fake.address().replace("\n", ", ")
-            balance = round(fake.pydecimal(left_digits=5, right_digits=2, positive=True), 2)
+            balance = 0.00
             writer.writerow([uid, email, password, firstname, lastname, address, balance])
         print(f'{num_users} generated')
     return available_users
