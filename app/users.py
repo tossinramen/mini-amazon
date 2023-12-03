@@ -252,10 +252,12 @@ def public_user_profile(user_id):
     seller_reviews = None
     if is_seller:
         seller_query = '''
-        SELECT address, avg_rating
+        SELECT address, avg_rating, COUNT(sr.sid) as rating_count
         FROM Users
         JOIN Sellers ON Users.id = Sellers.uid
+        LEFT JOIN Seller_Rating sr ON Sellers.uid = sr.sid
         WHERE Users.id = :user_id
+        GROUP BY Users.id, Sellers.avg_rating, Users.address
         '''
         seller_info_result = app.db.execute(seller_query, user_id=user_id)
         seller_info = seller_info_result[0] if seller_info_result else None
