@@ -7,7 +7,7 @@ import random
 num_users = 100
 num_products = 2000
 num_purchases = 2500
-num_product_ratings = 1000
+num_product_ratings = 10000
 num_seller_ratings = 1000
 
 Faker.seed(0)
@@ -43,6 +43,7 @@ def gen_users(num_users):
     return available_users
 
 
+
 def gen_products(num_products):
     available_pids = []
     with open('Products.csv', 'w') as f:
@@ -58,15 +59,16 @@ def gen_products(num_products):
 
             description = fake.sentence(nb_words=20)[:-1]
             
-            available = 'true'
-            with open('Seller_Inventory.csv', 'r') as inventory_file:
-                reader = csv.reader(inventory_file)
-                total_quantity = 0
-                for row in reader:
-                    if int(row[1]) == pid:
-                        total_quantity += int(row[2])
-                if total_quantity == 0:
-                    available = 'false'
+            # available = 'true'
+            # with open('db/generated/Seller_Inventory.csv', 'r') as inventory_file:
+            #     reader = csv.reader(inventory_file)
+            #     total_quantity = 0
+            #     for row in reader:
+            #         if int(row[1]) == pid:
+            #             total_quantity += int(row[2])
+            #     if total_quantity == 0:
+            #         available = 'false'
+            available = fake.random_element(elements=('true', 'false'))
             if available == 'true':
                 available_pids.append(pid)
 
@@ -76,11 +78,55 @@ def gen_products(num_products):
                                                     'Books and Media', 
                                                     'Health and Beauty'))
 
+            tag, subtag = gen_product_tags(category)
+
             image_url = f"https://picsum.photos/200/200/?random={pid}"
 
-            writer.writerow([pid, name, price, description, available, category, image_url])
+            writer.writerow([pid, name, price, description, available, category, tag, subtag, image_url])
         print(f'{num_products} generated; {len(available_pids)} available')
     return available_pids
+
+def gen_product_tags(category):
+    """
+    Given the category of a product, generate a tag and a subtag (i.e. a hierarchy of tags) to add to the product.
+    """
+    tag_subtag_mapping = {
+        'Electronics': {
+            'Smartphones': ('iPhone', 'Samsung Galaxy', 'Google Pixel', 'OnePlus'),
+            'Laptops': ('MacBook', 'Dell XPS', 'HP Spectre', 'Lenovo ThinkPad'),
+            'Headphones': ('Over-ear', 'In-ear', 'Wireless', 'Noise-canceling'),
+            'Smartwatches': ('Apple Watch', 'Samsung Galaxy Watch', 'Fitbit', 'Garmin'),
+            'Cameras': ('DSLR', 'Mirrorless', 'Point-and-Shoot', 'Action Cameras'),
+            'Gaming Consoles': ('PlayStation', 'Xbox', 'Nintendo Switch'),
+            'Smart Home': ('Smart Speakers', 'Smart Lights', 'Smart Thermostats', 'Smart Security Cameras')
+        },
+        'Fashion and Apparel': {
+            'Clothing': ('T-Shirts', 'Dresses', 'Jeans', 'Sweaters'),
+            'Footwear': ('Sneakers', 'Boots', 'Sandals', 'Heels'),
+            'Accessories': ('Hats', 'Scarves', 'Bags', 'Watches')
+        },
+        'Home and Garden': {
+            'Furniture': ('Sofas', 'Chairs', 'Tables', 'Beds'),
+            'Decor': ('Lamps', 'Candles', 'Mirrors', 'Wall Art'),
+            'Appliances': ('Refrigerators', 'Microwaves', 'Washing Machines', 'Coffee Makers')
+        },
+        'Books and Media': {
+            'Books': ('Fiction', 'Non-fiction', 'Mystery', 'Science Fiction'),
+            'Movies': ('Action', 'Comedy', 'Drama', 'Science Fiction'),
+            'Music': ('Rock', 'Pop', 'Hip Hop', 'Electronic')
+        },
+        'Health and Beauty': {
+            'Skincare': ('Cleansers', 'Moisturizers', 'Serums', 'Sunscreen'),
+            'Makeup': ('Lipstick', 'Eyeshadow', 'Foundation', 'Mascara'),
+            'Fitness': ('Yoga Mats', 'Dumbbells', 'Resistance Bands', 'Treadmills')
+        }
+    }
+
+    tag = fake.random_element(elements=list(tag_subtag_mapping[category].keys()))
+    subtag = fake.random_element(elements=tag_subtag_mapping[category][tag])
+
+    return tag, subtag
+
 
 
 # def gen_purchases(num_purchases, available_pids):

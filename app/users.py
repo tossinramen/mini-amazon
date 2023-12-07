@@ -241,6 +241,7 @@ def public_user_profile(user_id):
     JOIN Sellers s ON si.uid = s.uid
     JOIN Users u ON s.uid = u.id
     WHERE r.uid = :user_id
+    ORDER BY r.time_reviewed DESC
     '''
     user_reviews = app.db.execute(reviews_query, user_id=user_id)
 
@@ -252,7 +253,7 @@ def public_user_profile(user_id):
     seller_reviews = None
     if is_seller:
         seller_query = '''
-        SELECT address, avg_rating, COUNT(sr.sid) as rating_count
+        SELECT address, AVG(sr.stars) as avg_rating, COUNT(sr.sid) as rating_count
         FROM Users
         JOIN Sellers ON Users.id = Sellers.uid
         LEFT JOIN Seller_Rating sr ON Sellers.uid = sr.sid
@@ -267,6 +268,7 @@ def public_user_profile(user_id):
         FROM Seller_Rating sr
         JOIN Users u ON sr.uid = u.id
         WHERE sr.sid = :user_id
+        ORDER BY sr.time_reviewed DESC  
         '''
         seller_reviews = app.db.execute(seller_reviews_query, user_id=user_id)
 
