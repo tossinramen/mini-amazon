@@ -120,3 +120,10 @@ def my_past_seller_orders():
 def redirect_to_user_purchases():
     user_id = request.form.get('user_id')
     return redirect(url_for('users.user_purchases', uid=user_id))
+
+@bp.context_processor
+def context_processor():
+    def user_profile_link(user_id, user_name):
+        return Markup(f'<a href="{url_for("users.public_user_profile", user_id=user_id)}">{user_name}</a>')
+    return dict(user_profile_link=user_profile_link)
+

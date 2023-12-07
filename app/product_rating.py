@@ -67,3 +67,16 @@ def update_data():
     # Perform the update query using the data provided
 
     return redirect(url_for('product_rating.product_rating'))
+
+@bp.route('/add_pr', methods=['GET', 'POST'])
+def add_data():
+    description = request.form.get('description')
+    stars = request.form.get('stars')
+    uid = current_user.id
+    pid = request.form.get('pid')
+    update_query = ('''INSERT INTO Product_Rating (uid, pid, description, upvotes, downvotes, stars) VALUES (:uid, :pid, :description, 0, 0, :stars''') 
+
+    app.db.execute(update_query, description = description, stars = stars, pid = pid, uid = uid)
+    # Perform the update query using the data provided
+
+    return redirect(url_for('product_rating.product_rating'))    
