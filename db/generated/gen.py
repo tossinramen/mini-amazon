@@ -38,7 +38,7 @@ def gen_users(num_users):
             firstname = name_components[0]
             lastname = name_components[-1]
             address = fake.address().replace("\n", ", ")
-            balance = round(fake.pydecimal(left_digits=5, right_digits=2, positive=True), 2)
+            balance = 0.00
             writer.writerow([uid, email, password, firstname, lastname, address, balance])
         print(f'{num_users} generated')
     return available_users
@@ -59,16 +59,15 @@ def gen_products(num_products):
 
             description = fake.sentence(nb_words=20)[:-1]
             
-            # available = 'true'
-            # with open('db/generated/Seller_Inventory.csv', 'r') as inventory_file:
-            #     reader = csv.reader(inventory_file)
-            #     total_quantity = 0
-            #     for row in reader:
-            #         if int(row[1]) == pid:
-            #             total_quantity += int(row[2])
-            #     if total_quantity == 0:
-            #         available = 'false'
-            available = fake.random_element(elements=('true', 'false'))
+            available = 'true'
+            with open('Seller_Inventory.csv', 'r') as inventory_file:
+                reader = csv.reader(inventory_file)
+                total_quantity = 0
+                for row in reader:
+                    if int(row[1]) == pid:
+                        total_quantity += int(row[2])
+                if total_quantity == 0:
+                    available = 'false'
             if available == 'true':
                 available_pids.append(pid)
 

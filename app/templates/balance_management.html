@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+<style>
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <h2>Manage Balance</h2>
+        </div>
+        <div class="card-body">
+            <p>Current Balance: ${{ user.balance }}</p>
+
+            <form action="{{ url_for('users.deposit') }}" method="post" class="form-group">
+                <label for="deposit_amount">Deposit Amount:</label>
+                <input type="number" name="deposit_amount" min="0" class="form-control">
+                <input type="submit" value="Deposit" class="btn btn-primary mt-2">
+            </form>
+
+            <form action="{{ url_for('users.withdraw') }}" method="post" class="form-group">
+                <label for="withdraw_amount">Withdraw Amount:</label>
+                <input type="number" name="withdraw_amount" min="0" max="{{ user.balance }}" class="form-control">
+                <input type="submit" value="Withdraw" class="btn btn-primary mt-2">
+            </form>
+        </div>
+        <div class="card-footer">
+            <a href="{{ url_for('users.profile') }}" class="btn btn-secondary">Back to Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
