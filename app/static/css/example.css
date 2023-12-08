@@ -112,7 +112,7 @@ body {
   
   .login-form a {
     text-decoration: none;
-    color: #007bff;
+    color: #fff;
     display: block;
     text-align: center;
     margin-top: 1rem;
@@ -120,6 +120,7 @@ body {
   
   .login-form a:hover {
     text-decoration: underline;
+    color: #fff;
   }
   
   .error {
@@ -143,3 +144,12 @@ body {
     font-size: larger;
     font-weight: bold; 
   }
+  a {
+    color: #fff; 
+    text-decoration: none; 
+}
+
+a:hover {
+    text-decoration: underline; 
+    color: #fff; 
+}
