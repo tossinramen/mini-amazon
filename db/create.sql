@@ -18,6 +18,8 @@ CREATE TABLE Products (
     description VARCHAR(255) NOT NULL,
     available BOOLEAN DEFAULT TRUE,
     category VARCHAR(255) NOT NULL,
+    tag VARCHAR(255) NOT NULL,
+    subtag VARCHAR(255) NOT NULL,
     image_url VARCHAR(255) NOT NULL
 );
 
@@ -69,6 +71,7 @@ CREATE TABLE Carts (
 );
 
 
+
 CREATE TABLE CartLineItems (    
     id INT NOT NULL REFERENCES Carts(id),
     sid INT NOT NULL REFERENCES Sellers(uid),
@@ -87,3 +90,7 @@ CREATE TABLE BoughtLineItems (
     fulfilled BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (id, sid, pid)
 );
+
+
+
+
