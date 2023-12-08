@@ -122,6 +122,7 @@ def product_details(pid):
     product_result = app.db.execute(product_query, pid=pid)
 
     if product_result:
+        pid = product_result[0][0]
         name = product_result[0][1]
         price = product_result[0][2]
         description = product_result[0][3]
@@ -141,7 +142,8 @@ def product_details(pid):
 
     seller_info = app.db.execute(seller_query)
 
-    return render_template('detailed_product.html', name=name,
+    return render_template('detailed_product.html', id=pid, 
+                           name=name,
                            price=price,
                            description=description,
                            available=available,
@@ -150,66 +152,71 @@ def product_details(pid):
                            avg_stars=avg_stars,
                            seller_info=seller_info)
 
-def add_to_cart(uid, pid, seller_id, quantity):
+@bp.route('/product_details/<int:pid>', methods=['GET', 'POST'])
+def add_to_cart(pid):
     # subtract from seller inventory (sid, pid, quantity)
-    change_seller_inventory(pid, seller_id, quantity)
+    # change_seller_inventory(pid, seller_id, quantity)
 
     # add to cart line items (cid, sid, pid, quantity, price)
         # get cart id from carts (cid, uid)
+    uid = request.form.get('user_id')
+    pid = request.form.get('product_id')
+    seller_id = request.form.get('seller_id')
+    quantity = request.form.get('quantity')
+
+    if not seller_id and not quantity:
+        abort(400, "Seller ID and quantity are required.")
+
+    if not seller_id:
+        abort(400, "Seller ID is required.")
+
+    if not quantity:
+        abort(400, "Quantity is required.")
 
     cart_id = get_cart_id(uid)
     
-    search_cart_query = f'''
-    SELECT id
-    FROM cartlineitems
-    WHERE sid = {seller_id} AND pid = {pid} AND id = {cid}
+    cart_query = '''
+    INSERT INTO cartlineitems (id, sid, pid, qty, price)
+    VALUES (
+        :cart_id, :seller_id, :pid, :quantity,
+        (SELECT price FROM products WHERE id = :pid)
+    )
+    ON CONFLICT (sid, pid, cid) DO UPDATE
+    SET quantity = cartlineitems.quantity + :quantity;
     '''
-    search_cart = app.db.execute(search_cart_query)
-    if search_cart.rowcount == 0:
-        cart_query = f'''
-        INSERT INTO cartlineitems
-        VALUES (
-            {cart_id}, {seller_id}, {pid}, {quantity}, (
-                SELECT price
-                FROM products
-                WHERE id = {pid}
-            )
-        )
-        '''
-    else:
-        cart_query = f'''
-        UPDATE cartlineitems
-        SET qty = qty + {quantity}
-        WHERE sid = {seller_id} AND pid = {pid} AND id = {cart_id}
-        '''
-    app.db.execute(cart_query)
 
-def change_seller_inventory(pid, seller_id, quantity):
-    seller_quantity_query = f'''
-    SELECT quantity
-    FROM seller_inventory
-    WHERE uid = {seller_id} AND pid = {pid}
-    '''
-    result = db.app.execute(seller_quantity_query)
-    if result.rowcount == 0:
-        raise ValueError("Seller does not sell this product.")
-    seller_quantity = result[0][0]
-    if seller_quantity >= quantity:
-        seller_query = f'''
-        UPDATE seller_inventory
-        SET quantity = quantity - {quantity}
-        WHERE uid = {seller_id} AND pid = {pid}
-        '''
-        app.db.execute(seller_query)
-        if seller_quantity == quantity:
-            product_query = f'''
-            UPDATE products
-            SET available = false
-            WHERE id = {pid}
-            '''
-            app.db.execute(product_query)
-    else:
-        raise ValueError("Seller does not have enough inventory for requested quantity.")
+    app.db.execute(cart_query, cart_id=cart_id, uid=uid, seller_id=seller_id, pid=pid, quantity=quantity)
+
+    return redirect(url_for('products.product_details', pid=pid, success_message="Added to cart successfully."))
+
+
+
+# def change_seller_inventory(pid, seller_id, quantity):
+#     seller_quantity_query = f'''
+#     SELECT quantity
+#     FROM seller_inventory
+#     WHERE uid = {seller_id} AND pid = {pid}
+#     '''
+#     result = db.app.execute(seller_quantity_query)
+#     if result.rowcount == 0:
+#         raise ValueError("Seller does not sell this product.")
+#     seller_quantity = result[0][0]
+#     if seller_quantity >= quantity:
+#         seller_query = f'''
+#         UPDATE seller_inventory
+#         SET quantity = quantity - {quantity}
+#         WHERE uid = {seller_id} AND pid = {pid}
+#         '''
+#         app.db.execute(seller_query)
+#         if seller_quantity == quantity:
+#             product_query = f'''
+#             UPDATE products
+#             SET available = false
+#             WHERE id = {pid}
+#             '''
+#             app.db.execute(product_query)
+#     else:
+#         raise ValueError("Seller does not have enough inventory for requested quantity.")
 
 def get_cart_id(uid):
     cart_query = f'''
@@ -218,9 +225,16 @@ def get_cart_id(uid):
     WHERE uid = {uid}
     '''
     result = app.db.execute(cart_query)
-    if result.rowcount == 0:
+
+    # Check if any rows were returned
+    if not result:
         raise ValueError("User does not have a cart.")
-    return result[0][0]
+    
+    # Check if the list is not empty before accessing the first element
+    if result and result[0]:
+        return result[0][0]
+    else:
+        raise ValueError("User does not have a cart.")
         
     
 
