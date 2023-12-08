@@ -118,6 +118,7 @@ def get_orders_by_uid(uid, limit, offset):
         INNER JOIN Purchases pur ON bli.id = pur.id
         WHERE pur.uid = :uid
         GROUP BY pur.id
+        ORDER BY pur.time_purchased DESC  -- Added sorting by purchase time in descending order
         LIMIT :limit OFFSET :offset
     '''
     result = app.db.execute(sql_query, uid=uid, limit=limit, offset=offset)
