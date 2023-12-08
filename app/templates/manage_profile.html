@@ -61,11 +61,23 @@
         padding: 2rem;
         color: #333;
     }
+    .flash-message {
+        font-size: 1em;
+        color: red;
+        margin: 10px 0;
+    }
 </style>
 {% endblock %}
 <!-- need to be able to update email, first name, last name,address, balance  -->
 {% block content %}
 <div class="container mt-5">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
     <div class="card">
         <div class="card-header">
             <h2>Manage Profile</h2>

@@ -161,12 +161,20 @@ def redirect_to_user_purchases():
 def manage_profile():
     return render_template('manage_profile.html', user=current_user)
 
-@bp.route('/update_email', methods=['POST']) # need post method
+@bp.route('/update_email', methods=['POST'])
 @login_required
 def update_email():
     new_email = request.form['email']
-    update_query = 'UPDATE Users SET email = :email WHERE id = :user_id' #use UPDATE to make new email apepar on profile
+    #check if the new email already exists in the database
+    if User.email_exists(new_email):
+        #flash an error message if the email already exists
+        flash('Email already exists! Please choose another email.', 'error')
+        return redirect(url_for('users.manage_profile'))
+    
+    #if the email does not exist, proceed with the update
+    update_query = 'UPDATE Users SET email = :email WHERE id = :user_id'
     app.db.execute(update_query, email=new_email, user_id=current_user.get_id())
+    flash('Your email has been updated successfully!', 'success')
     return redirect(url_for('users.profile'))
 
 #update first and last name separately 
