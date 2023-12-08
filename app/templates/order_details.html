@@ -2,10 +2,15 @@
 
 {% block content %}
 <br><br>
+<body>
+    <a href="{{ url_for('carts.orders', uid=current_user.get_id()) }}" type="button" class="btn btn-light">Orders</a>
+</body>
+<br><br>
 <h2>Details for order:</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
+      <!-- need product name, quantity, price, seller name, fulfilled or not, time fulfilled -->
       <th scope="col">Product Name</th>
       <th scope="col">Quantity</th>
       <th scope="col">Price</th>

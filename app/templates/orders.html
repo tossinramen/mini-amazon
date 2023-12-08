@@ -2,10 +2,15 @@
 
 {% block content %}
 <br><br>
+<body>
+  <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
+</body>
+<br><br>
 <h2>Orders:</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
+      <!-- need order, price, and if fulfilled or not  -->
       <th scope="col">Order</th>
       <th scope="col">Total Price</th>
       <th scope="col">Order Fulfilled</th>
@@ -17,6 +22,7 @@
       <td><a href="{{ url_for('carts.order_details', uid=uid, purchase_id=item['purchase_id']) }}">{{ item.order_number }}</a></td>
       <td>${{ '%0.2f' % item.total_price }}</td>
       <td>
+        <!-- show fulfilment time only if fulfilled -->
         {% if item.fulfilled and item.fulfillment_time %}
           {{ item['fulfillment_time'].strftime("%Y-%m-%d %H:%M:%S") }}
         {% else %}

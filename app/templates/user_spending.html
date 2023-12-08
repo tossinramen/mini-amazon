@@ -32,7 +32,7 @@
         margin-top: 20px; 
     }
 </style>
-
+<!-- make sortable by time, alphabetical,and total spending -->
 <div class="container mt-5">
     <h2>Spending History for {{ user_name }}</h2>
     <table class="table" id="spendingTable">
@@ -55,6 +55,7 @@
     </table>
 </div>
 
+<!-- function for make sortable by time, alphabetical,and total spending -->
 <script>
 function sortTable(columnIndex, type) {
     var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;

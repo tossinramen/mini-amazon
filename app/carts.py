@@ -54,7 +54,7 @@ def update_all_quantities():
                 AND sid = :sid
                 ''', new_quantity=new_quantity, id=id, pid=pid, sid=sid, uid=current_user.id)
     return redirect(url_for('carts.cart', uid=current_user.id))
-
+# remove an item from cart
 @bp.route('/remove_item/<int:id>/<int:pid>/<int:sid>', methods=['GET', 'POST'])
 def remove_item(id, pid, sid):
     app.db.execute('''
@@ -84,6 +84,8 @@ def orders(uid):
     used_end_parts = set() 
     for item in raw_order_items:
         fulfillment_time = item['fulfillment_time']
+        #create order names based on purchase id and time
+        #sellerid not work - orders can be from multiple sellers.
         if fulfillment_time:
             formatted_time = fulfillment_time.isoformat()
             hash_input = f"{item['purchase_id']}-{formatted_time}".encode()
@@ -92,7 +94,7 @@ def orders(uid):
 
         hash_object = hashlib.sha256(hash_input)
         base_order_end_part = hash_object.hexdigest()[:10]
-
+        #make sure all unique
         order_end_part = base_order_end_part
         i = 0
         while order_end_part in used_end_parts:
@@ -100,6 +102,7 @@ def orders(uid):
             order_end_part = f"{base_order_end_part}-{i}"
 
         used_end_parts.add(order_end_part)
+        #purchase id + hashed time
         order_number = f"ORDER {item['purchase_id']}-{order_end_part}"
         item['order_number'] = order_number
         order_items.append(item)
@@ -144,7 +147,7 @@ def get_total_orders_count(uid):
     total_result = app.db.execute(count_query, uid=uid)
     total = total_result[0][0] if total_result else 0
     return total
-
+#order details for each order (what purchases are included in the order)
 @bp.route('/order_details/<int:uid>/<int:purchase_id>')
 def order_details(uid, purchase_id):
     if not current_user.is_authenticated or current_user.id != uid:
@@ -154,7 +157,7 @@ def order_details(uid, purchase_id):
     order_details = get_order_details(purchase_id)
 
     return render_template('order_details.html', order_details=order_details, order_number=f"ORDER #{purchase_id}")
-
+#need fulfillment type IF fulfilled. 
 def get_order_details(purchase_id):
     sql_query = '''
         SELECT pr.name, bli.qty, bli.price, u.firstname, u.lastname, bli.fulfilled, pur.time_purchased
@@ -180,7 +183,7 @@ def get_order_details(purchase_id):
 
     return order_details
     return redirect(url_for('carts.cart', uid=current_user.id))
-
+#cart when submitted goes to purchases and orders, needs to be cleared.
 @bp.route('/submit_cart', methods=['POST'])
 def submit_cart():
     user_id = current_user.id

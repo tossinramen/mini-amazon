@@ -79,14 +79,15 @@ def logout():
 @bp.route('/my_purchases', methods=['GET'])
 @login_required
 def my_purchases():
-    return redirect(url_for('users.user_purchases', uid=current_user.get_id()))
+    return redirect(url_for('users.user_purchases', uid=current_user.get_id())) #redirects to user_purchases.html
 
-@bp.route('/profile')
+@bp.route('/profile') 
 @login_required  
 def profile():
     return render_template('profile.html', user=current_user)
-
-PER_PAGE = 10  
+#route to display the purchases made by a specific user, identified by 'uid'.
+#filter by item, seller, and date.
+PER_PAGE = 10  #pagination 
 @bp.route('/user_purchases/<int:uid>', methods=['GET'])
 @login_required
 def user_purchases(uid):
@@ -94,7 +95,7 @@ def user_purchases(uid):
     item = request.args.get('item', type=str)
     seller = request.args.get('seller', type=str)
     date = request.args.get('date', type=str)
-    offset = (page - 1) * PER_PAGE
+    offset = (page - 1) * PER_PAGE #calculating offset
 
     base_query = '''
     SELECT p.id AS purchase_id, pr.name AS product_name, b.qty, b.price, p.time_purchased, b.fulfilled, u.firstname || ' ' || u.lastname AS seller_name, u.id AS seller_id
@@ -104,12 +105,12 @@ def user_purchases(uid):
     JOIN Users u ON b.sid = u.id
     WHERE p.uid = :uid
     '''
-    filter_clauses = []
+    filter_clauses = [] # List to hold dynamic filter clauses
     params = {'uid': uid}
 
     if item:
         filter_clauses.append("pr.name ILIKE :item")
-        params['item'] = f"%{item}%"
+        params['item'] = f"%{item}%" 
     if seller:
         filter_clauses.append("(u.firstname || ' ' || u.lastname) ILIKE :seller")
         params['seller'] = f"%{seller}%"
@@ -139,36 +140,36 @@ def user_purchases(uid):
 
     return render_template('user_purchases.html', user_purchases=user_purchases, total=total, page=page, per_page=PER_PAGE, uid=uid, item=item, seller=seller, date=date)
 
-
+# redirects to the seller's inventory page
 @bp.route('/seller_page')
 def redirect_to_seller_inventory():
     return redirect(url_for('seller_inventory.inventory', uid=current_user.get_id()))
-
+# Redirects to the seller's past orders page
 @bp.route('/my_past_seller_orders')
 def my_past_seller_orders():
     return redirect(url_for('seller_inventory.past_seller_orders', uid=current_user.get_id()))
-
+#redirects to the user's purchases page based on uid
 @bp.route('/redirect_to_user_purchases', methods=['POST'])
 def redirect_to_user_purchases():
     user_id = request.form.get('user_id')
     return redirect(url_for('users.user_purchases', uid=user_id))
 
 
-
+#route to manage profile
 @bp.route('/manage_profile')
 @login_required
 def manage_profile():
     return render_template('manage_profile.html', user=current_user)
 
-@bp.route('/update_email', methods=['POST'])
+@bp.route('/update_email', methods=['POST']) # need post method
 @login_required
 def update_email():
     new_email = request.form['email']
-    update_query = 'UPDATE Users SET email = :email WHERE id = :user_id'
+    update_query = 'UPDATE Users SET email = :email WHERE id = :user_id' #use UPDATE to make new email apepar on profile
     app.db.execute(update_query, email=new_email, user_id=current_user.get_id())
     return redirect(url_for('users.profile'))
 
-
+#update first and last name separately 
 @bp.route('/update_firstname', methods=['POST'])
 @login_required
 def update_firstname():
@@ -177,7 +178,7 @@ def update_firstname():
     app.db.execute(update_query, firstname=new_firstname, user_id=current_user.get_id())
    
     return redirect(url_for('users.profile'))
-
+#last name
 @bp.route('/update_lastname', methods=['POST'])
 @login_required
 def update_lastname():
@@ -186,7 +187,7 @@ def update_lastname():
     app.db.execute(update_query, lastname=new_lastname, user_id=current_user.get_id())
     
     return redirect(url_for('users.profile'))
-
+#update address
 @bp.route('/update_address', methods=['POST'])
 @login_required
 def update_address():
@@ -195,15 +196,16 @@ def update_address():
     app.db.execute(update_query, address=new_address, user_id=current_user.get_id())
   
     return redirect(url_for('users.profile'))
-
+#go to balance management page
 @bp.route('/update_balance', methods=['POST'])
 @login_required
 def update_balance():
     return render_template('balance_management.html', user=current_user)
-
+#handles deposits
 @bp.route('/deposit', methods=['POST'])
 @login_required
 def deposit():
+    #current + deposit amount
     deposit_amount = Decimal(request.form['deposit_amount'])
     current_balance = current_user.balance
     new_balance = current_balance + deposit_amount
@@ -211,12 +213,13 @@ def deposit():
     app.db.execute(update_query, balance=str(new_balance), user_id=current_user.get_id())
  
     return redirect(url_for('users.profile'))
-
+#withdraw money 
 @bp.route('/withdraw', methods=['POST'])
 @login_required
 def withdraw():
     withdraw_amount = Decimal(request.form['withdraw_amount'])
     current_balance = current_user.balance
+    #check to make sure cant withdraw more than balance
     if withdraw_amount > current_balance:
     
         return redirect(url_for('users.update_balance'))
@@ -226,7 +229,7 @@ def withdraw():
     app.db.execute(update_query, balance=str(new_balance), user_id=current_user.get_id())
     return redirect(url_for('users.profile'))
 
-
+#public profile, make diffeerent for seller. seller needs rating info about them.
 @bp.route('/user/<int:user_id>', methods=['GET'])
 def public_user_profile(user_id):
     user_query = 'SELECT id, firstname, lastname, email FROM Users WHERE id = :user_id'
@@ -247,7 +250,7 @@ def public_user_profile(user_id):
     is_seller_query = 'SELECT COUNT(*) FROM Sellers WHERE uid = :user_id'
     is_seller_result = app.db.execute(is_seller_query, user_id=user_id)
     is_seller = is_seller_result[0][0] > 0 if is_seller_result else False
-
+    
     seller_info = None
     seller_reviews = None
     if is_seller:
@@ -271,13 +274,15 @@ def public_user_profile(user_id):
         seller_reviews = app.db.execute(seller_reviews_query, user_id=user_id)
 
     return render_template('public_user_profile.html', user_info=user_info, user_reviews=user_reviews, seller_info=seller_info, seller_reviews=seller_reviews)
-
+#need for profile link
 @bp.context_processor
 def context_processor():
     def user_profile_link(user_id, user_name):
         return Markup(f'<a href="{url_for("users.public_user_profile", user_id=user_id)}">{user_name}</a>')
     return dict(user_profile_link=user_profile_link)
 
+
+#user's spending. make sure to do pagination here. make spending history sortable by category, year, money.
 @bp.route('/user_spending/<int:uid>', methods=['GET'])
 @login_required
 def user_spending(uid):

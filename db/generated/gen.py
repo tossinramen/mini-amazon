@@ -19,7 +19,9 @@ fake = Faker()
 def get_csv_writer(f):
     return csv.writer(f, dialect='unix')
 
-
+#MAKE SURE BALANCE IS DECIMAL NOT INTEGER
+#split name into first and last
+#uid, email, password, firstname, lastname, address, balance
 def gen_users(num_users):
     with open('Users.csv', 'w') as f:
         writer = get_csv_writer(f)
@@ -177,7 +179,7 @@ def gen_seller_inventory(seller_uids, product_uids, max_quantity_per_product):
         print(f'{len(seller_uids)} seller inventory records generated')
 
     return
-
+#need time, uid, sellerid, purchase id
 def gen_purchases(user_ids, num_orders):
     with open('Purchases.csv', 'w') as f:
         writer = get_csv_writer(f)
