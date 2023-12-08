@@ -36,6 +36,7 @@ def past_seller_orders(uid):
         SELECT id, sid, pid, qty, price, fulfilled
         FROM BoughtLineItems
         WHERE sid = :uid
+        ORDER BY id
         LIMIT :limit OFFSET :offset
     """
     
@@ -62,33 +63,87 @@ def category_tag_filter(base_query, selected, cat_or_tag):
 
 @bp.route('/redirect_to_filtered_orders', methods=['GET', 'POST'])
 def redirect_to_filtered_orders():
-    uid = redirect_to_filtered_orders
+    uid = current_user.id
     return redirect(url_for('seller_inventory.filtered_orders', uid=uid))
 
-@bp.route('/filtered_orders/<int:uid>')
+@bp.route('/filtered_orders/<int:uid>', methods=['GET', 'POST'])
 def filtered_orders(uid):
     PER_PAGE = 10 
     page = request.args.get('page', 1, type=int)
-    sort_by = request.args.get('sort_by', 'all')
-    search_type = request.args.get('search_type', 'all')
-    search = get_search_keywords()
+    sort_type = request.args.get('sort_type', type=str)  
+    sort_order = request.args.get('sort_order', type=str)
+    search_type = request.args.get('search_type', type=str)
+    search_order = request.args.get('search_order', type=str)
     offset = (page - 1) * PER_PAGE
-    
-    # total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM BoughtLineItems WHERE sid = :uid', uid=uid)
-    # Assuming the first element of the tuple is the 'total_count'.
+
+    print(f"Sort Order: {sort_order}")
+
+    # Assuming you have a total count query
+    total_query = """
+        SELECT COUNT(*) AS total_count
+        FROM BoughtLineItems
+        WHERE sid = :uid
+    """
+
+    # Modify the query based on search conditions
+    if search_type == 'order_id' and search_order != "":
+        total_query += f" AND id = :search_order"
+    elif search_type == 'product_id' and search_order != "":
+        total_query += f" AND pid = :search_order"
+
+    # Execute the modified total count query
+    total_result = app.db.execute(total_query, uid=uid, search_order=search_order)
     total = total_result[0][0] if total_result else 0
 
+
+    # Build the base query
     query = """
         SELECT id, sid, pid, qty, price, fulfilled
         FROM BoughtLineItems
         WHERE sid = :uid
-        LIMIT :limit OFFSET :offset
     """
+
+    # Add search conditions
+    if search_type == 'order_id' and search_order != "":
+        query += f" AND id = :search_order"
+        search_type = "id"
+    elif search_type == 'product_id' and search_order != "":
+        query += f" AND pid = :search_order"
+        search_type = "pid"
+    elif search_type == 'order_id':
+        search_type = "id"
+    else:
+        search_type = "pid"
+
+    # Add ORDER BY clause
+    if sort_type and sort_type != 'None':
+        if sort_type == 'order_id':
+            query += f" ORDER BY id {sort_order}"
+        elif sort_type == 'product_id':
+            query += f" ORDER BY pid {sort_order}"
+        else:
+            # Default sorting if no specific order is provided
+            query += f" ORDER BY {search_type} ASC"
     
-    seller_orders = app.db.execute(query, uid=uid, limit=PER_PAGE, offset=offset)  
-    
-    return render_template('seller_orders.html', inventory=seller_orders, total=total,
-                           page=page, per_page=PER_PAGE, uid=uid)
+    # Add LIMIT and OFFSET
+    query += f" LIMIT :limit OFFSET :offset"
+
+    # Execute the query
+    seller_orders = app.db.execute(query, uid=uid, search_order=search_order, limit=PER_PAGE, offset=offset)
+
+    return render_template(
+        'seller_orders.html',
+        inventory=seller_orders,
+        total=total,
+        page=page,
+        per_page=PER_PAGE,
+        uid=uid,
+        search_type=search_type,
+        search_order=search_order,
+        sort_order=sort_order,
+    )
+
+
 
 @bp.route('/redirect_to_edit_quantity', methods=['GET', 'POST'])
 def redirect_to_edit_quantity():
@@ -196,3 +251,15 @@ def add_product():
 
     flash("Product added to seller inventory successfully.", 'success')
     return redirect(url_for('users.redirect_to_seller_inventory'))
+
+@bp.route('/toggle_fulfillment/<int:order_id>/<int:pid>/<int:fulfilled>/', methods=['GET', 'POST'])
+def toggle_fulfillment(order_id, pid, fulfilled):
+    uid = current_user.id
+    # Toggle the fulfillment status
+    if fulfilled:
+        update_query = 'UPDATE BoughtLineItems SET fulfilled = FALSE WHERE id = :order_id AND sid = :uid AND pid = :pid'
+    else:
+        update_query = 'UPDATE BoughtLineItems SET fulfilled = TRUE WHERE id = :order_id AND sid = :uid AND pid = :pid'
+    app.db.execute(update_query, order_id=order_id, uid=uid, pid=pid)
+
+    return redirect(url_for('seller_inventory.past_seller_orders', uid=uid))

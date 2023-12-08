@@ -80,12 +80,4 @@ CREATE TABLE CartLineItems (
     PRIMARY KEY (id, sid, pid)
 );
 
-CREATE TABLE BoughtLineItems (    
-    id INT NOT NULL REFERENCES Purchases(id),
-    sid INT NOT NULL REFERENCES Sellers(uid),
-    pid INT NOT NULL REFERENCES Products(id),
-    qty INT NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    fulfilled BOOLEAN DEFAULT FALSE,
-    PRIMARY KEY (id, sid, pid)
-);
+x

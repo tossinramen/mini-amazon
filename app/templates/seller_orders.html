@@ -1,99 +1,213 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <br><br>
-  <body>
-    <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
-    <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a>
-  </body>
+<br><br>
 
-  <div class="container">
-    <div class="row">
-      <!-- Search Form -->
-      <div class="col-md-6">
-        <form method="GET" id="searchForm">
-          <div class="form-group">
-            <label for="searchType">Search Type:</label>
-            <select class="form-control" name="search_type" id="searchType">
-              <option value="order_id" {% if search_type == 'order_id' %}selected{% endif %}>Order ID</option>
-              <option value="product_id" {% if search_type == 'product_id' %}selected{% endif %}>Product ID</option>
-            </select>
+<body>
+  <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
+  <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a>
+</body>
+<br><br>
+<div class="container">
+  <div class="row">
+    <!-- Search Form -->
+    <div class="col-md-6">
+      <form method="GET" id="searchForm">
+        <div class="form-group">
+          <label for="searchType">Search Type:</label>
+          <select class="form-control" name="search_type" id="searchType">
+            <option value="order_id" {% if search_type=='order_id' %}selected{% endif %}>Order ID</option>
+            <option value="product_id" {% if search_type=='product_id' %}selected{% endif %}>Product ID</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="searchOrder">Search ID:</label>
+          <div class="d-flex">
+            <input type="text" class="form-control" name="search_order" id="searchOrder" value="{{ search_order }}"
+              style="width: 300px;">
+            <button type="button" class="btn btn-primary ml-2" onclick="submitSearchForm()">Search</button>
+            <button type="button" class="btn btn-secondary ml-2" onclick="clearSearchForm()">Clear</button>
           </div>
-          <div class="form-group">
-            <label for="searchOrder">Search ID:</label>
-            <div class="d-flex">
-              <input type="text" class="form-control" name="search_order" id="searchOrder" value="{{ search_order }}" style="width: 300px;">
-              <button type="button" class="btn btn-primary ml-2" onclick="submitSearchForm()">Search</button>
-            </div>
-          </div>
-        </form>
-      </div>
-
-      <!-- Sort Controls -->
-      <div class="col-md-6">
-        <form method="GET" id="sortForm">
-          <div class="form-group">
-            <label for="sortOrder">Sort order:</label>
-            <div class="d-flex">
-              <select class="form-control" name="sort_order" id="sortOrder">
-                <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Ascending</option>
-                <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Descending</option>
-              </select>
-              <button type="button" class="btn btn-primary ml-2" onclick="submitSortForm()">Sort</button>
-            </div>
-          </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
+
+
+    <!-- Sort Controls -->
+    <div class="col-md-6">
+      <form method="GET" id="sortForm">
+        <div class="form-group">
+          <label for="sortType">Sort type:</label>
+          <select class="form-control" name="sort_type" id="sortType">
+            <option value="order_id" {% if sort_type=='order_id' %}selected{% endif %}>Order ID</option>
+            <option value="product_id" {% if sort_type=='product_id' %}selected{% endif %}>Product ID</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sortOrder">Sort order:</label>
+          <div class="d-flex">
+            <select class="form-control" name="sort_order" id="sortOrder">
+              <option value="asc" {% if sort_order=='asc' %}selected{% endif %}>Ascending</option>
+              <option value="desc" {% if sort_order=='desc' %}selected{% endif %}>Descending</option>
+            </select>
+            <button type="button" class="btn btn-primary ml-2" onclick="submitSortForm()">Sort</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+
   </div>
+</div>
 
-  <br><br>
-  <h2>Seller's Orders:</h2>
-  <table class='table table-hover table-bordered container'>
-    <thead class="thead-dark">
-      <tr>
-        <th scope="col">Order ID</th>
-        <th scope="col">Product ID</th>
-        <th scope="col">Quantity</th>
-        <th scope="col">Price</th>
-        <th scope="col">Fulfilled</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for order in inventory %}
-        <tr>
-          <td>{{ order.id }}</td>
-          <td>{{ order.pid }}</td>
-          <td>{{ order.qty }}</td>
-          <td>{{ order.price }}</td>
-          <td>{{ "Yes" if order.fulfilled else "No" }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<script>
+  // Function to get URL parameters
+  function getUrlParameter(name) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(name);
+  }
 
-  <nav aria-label="Page navigation">
-    <ul class="pagination">
-      {% set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) %}
-      {% for p in range(1, total_pages + 1) %}
-      <li class="page-item {% if p == page %}active{% endif %}">
-        <a class="page-link" href="{{ url_for('seller_inventory.past_seller_orders', uid=uid, page=p) }}">{{ p }}</a>
-      </li>
-      {% endfor %}
-    </ul>
-  </nav>
+  // Function to set form elements based on URL parameters
+  function setFormElements() {
+    const searchType = getUrlParameter('search_type');
+    const searchOrder = getUrlParameter('search_order');
+    const sortOrder = getUrlParameter('sort_order');
+    const sortType = getUrlParameter('sort_type');  // Add this line
 
-  <script>
-    function submitSearchForm() {
-      document.getElementById("searchForm").action = "{{ url_for('index.index') }}";
-      document.getElementById("searchForm").submit();
+    // Set search form elements
+    const searchTypeElement = document.getElementById('searchType');
+    const searchOrderElement = document.getElementById('searchOrder');
+    if (searchTypeElement && searchOrderElement) {
+      searchTypeElement.value = searchType || 'order_id';
+      searchOrderElement.value = searchOrder || '';
     }
 
-    function submitSortForm() {
-      document.getElementById("sortForm").action = "{{ url_for('index.index') }}";
-      document.getElementById("sortForm").submit();
+    // Set sort form elements
+    const sortTypeElement = document.getElementById('sortType');
+    if (sortTypeElement) {
+      sortTypeElement.value = sortType || 'order_id';
     }
+  }
 
-  </script>
+  // Set form elements on page load
+  document.addEventListener('DOMContentLoaded', function () {
+    setFormElements();
+  });
+
+  // Function to submit the form with pagination parameters
+  function submitPaginationForm(page) {
+    const searchType = document.getElementById("searchType").value;
+    const searchOrder = document.getElementById("searchOrder").value;
+    const sortOrder = document.getElementById("sortOrder").value;
+    const sortType = document.getElementById("sortType").value;
+
+    // Store selected search type in sessionStorage
+    sessionStorage.setItem('searchType', searchType);
+
+    const url = `{{ url_for('seller_inventory.filtered_orders', uid=uid) }}?page=${page}&sort_order=${sortOrder}&sort_type=${sortType}&search_type=${searchType}&search_order=${searchOrder}`;
+    window.location.href = url;
+  }
+
+  function submitSearchForm() {
+    submitPaginationForm(1);
+  }
+
+  function submitSortForm() {
+    submitPaginationForm(1);
+  }
+
+</script>
+
+<script>
+  function clearSearchForm() {
+    // Clear the search input
+    document.getElementById("searchOrder").value = "";
+
+    // Submit the form
+    submitSearchForm();
+  }
+</script>
+
+
+
+
+<br><br>
+<h2>Seller's Orders:</h2>
+<table class='table table-hover table-bordered container'>
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Order ID</th>
+      <th scope="col">Product ID</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Price</th>
+      <th scope="col">Fulfilled</th>
+      <th scope="col">Action</th> <!-- New column for the action button -->
+    </tr>
+  </thead>
+  <tbody>
+    {% for order in inventory %}
+    <tr>
+      <td>{{ order.id }}</td>
+      <td>{{ order.pid }}</td>
+      <td>{{ order.qty }}</td>
+      <td>{{ order.price }}</td>
+      <td>{{ "Yes" if order.fulfilled else "No" }}</td>
+      <td>
+        <!-- Add a button to toggle fulfillment status -->
+        <form method="POST"
+          action="{{ url_for('seller_inventory.toggle_fulfillment', order_id=order.id, pid = order.pid, fulfilled=order.fulfilled) }}">
+          <button type="submit" class="btn btn-primary btn-block">
+            {% if order.fulfilled %}
+            Unfulfill
+            {% else %}
+            Fulfill
+            {% endif %}
+          </button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) %}
+    {% for p in range(1, total_pages + 1) %}
+    <li class="page-item {% if p == page %}active{% endif %}">
+      <!-- Add a form for each pagination link -->
+      <form method="GET" id="paginationForm{{ p }}" style="display: none;">
+        <input type="hidden" name="page" value="{{ p }}">
+        <input type="hidden" name="sort_order" value="{{ sort_order }}">
+        <input type="hidden" name="search_type" value="{{ search_type }}">
+        <input type="hidden" name="search_order" value="{{ search_order }}">
+      </form>
+      <!-- Add an onclick event to submit the corresponding form -->
+      <a class="page-link" href="#" onclick="submitPaginationForm('{{ p }}')">
+        {{ p }}
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
+
+<script>
+  // Function to submit the form with pagination parameters
+  function submitPaginationForm(page) {
+    const searchType = document.getElementById("searchType").value;
+    const searchOrder = document.getElementById("searchOrder").value;
+    const sortOrder = document.getElementById("sortOrder").value;
+    const sortType = document.getElementById("sortType").value;  // Add this line
+
+    const url = `{{ url_for('seller_inventory.filtered_orders', uid=uid) }}?page=${page}&sort_order=${sortOrder}&sort_type=${sortType}&search_type=${searchType}&search_order=${searchOrder}`;
+    window.location.href = url;
+  }
+
+  function submitSortForm() {
+    submitPaginationForm(1);  // Submit the form for the first page
+  }
+
+</script>
 
 {% endblock %}
