@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, abort
+from flask import Blueprint, render_template, request, abort, redirect, url_for
 from flask import current_app as app
 
 bp = Blueprint('products', __name__)
@@ -132,15 +132,15 @@ def product_details(pid):
         avg_stars = product_result[0][7]
 
     # list each seller and their current quantities
-    seller_query = f'''
+    seller_query = '''
     SELECT uid, quantity,
            CONCAT(users.firstname, ' ', users.lastname) AS name
     FROM seller_inventory
     JOIN users ON users.id = seller_inventory.uid
-    WHERE pid = {pid}
+    WHERE pid = :pid
     '''
 
-    seller_info = app.db.execute(seller_query)
+    seller_info = app.db.execute(seller_query, pid=pid)
 
     return render_template('detailed_product.html', id=pid, 
                            name=name,
@@ -152,7 +152,7 @@ def product_details(pid):
                            avg_stars=avg_stars,
                            seller_info=seller_info)
 
-@bp.route('/product_details/<int:pid>', methods=['GET', 'POST'])
+@bp.route('/product_details/<int:pid>/cart', methods=['GET', 'POST'])
 def add_to_cart(pid):
     # subtract from seller inventory (sid, pid, quantity)
     # change_seller_inventory(pid, seller_id, quantity)
@@ -160,7 +160,7 @@ def add_to_cart(pid):
     # add to cart line items (cid, sid, pid, quantity, price)
         # get cart id from carts (cid, uid)
     uid = request.form.get('user_id')
-    pid = request.form.get('product_id')
+    # pid = request.form.get('product_id')
     seller_id = request.form.get('seller_id')
     quantity = request.form.get('quantity')
 
@@ -181,13 +181,13 @@ def add_to_cart(pid):
         :cart_id, :seller_id, :pid, :quantity,
         (SELECT price FROM products WHERE id = :pid)
     )
-    ON CONFLICT (sid, pid, cid) DO UPDATE
-    SET quantity = cartlineitems.quantity + :quantity;
+    ON CONFLICT (id, sid, pid) DO UPDATE
+    SET qty = cartlineitems.qty + :quantity;
     '''
 
     app.db.execute(cart_query, cart_id=cart_id, uid=uid, seller_id=seller_id, pid=pid, quantity=quantity)
-
-    return redirect(url_for('products.product_details', pid=pid, success_message="Added to cart successfully."))
+    return render_template('carts.html', uid=uid)
+    # return redirect(url_for('products.product_details', pid=pid, success_message="Added to cart successfully.", success=1))
 
 
 

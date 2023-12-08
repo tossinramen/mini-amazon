@@ -24,8 +24,9 @@
         </p>
         <p><strong>Average Rating:</strong> {{ '{:.2f}/5'.format(avg_stars) if avg_stars is not none else 'Not rated' }}</p>
         {% if current_user.is_authenticated %}
+        <form METHOD="POST" id="addToCartForm">
           <label for="sellerSelect">Select Seller:</label>
-          <select id="sellerSelect" name="seller_id">
+          <select class="form-control" id="sellerSelect" name="seller_id" style="width: 500px;">
               <option value="" disabled selected>Select a Seller</option>
               {% for seller in seller_info %}
                   <option value="{{ seller.uid }}" data-stock="{{ seller.quantity }}">{{ seller.name }}</option>
@@ -34,47 +35,27 @@
           <br>
           <br>
           <label for="quantitySelect">Quantity:</label>
-          <input type="number" id="quantityInput" name="quantity" value="1" min="1">
+          <input type="number" id="quantitySelect" name="quantity" value="1" min="1">
           <br>
           <br>
-          <form id="addToCartForm" action="{{ url_for('products.add_to_cart', pid=id) }}" method="post" onsubmit="return updateFormValues()">
-              <input type="hidden" id="userId" name="user_id" value="{{ current_user.id }}">
-              <input type="hidden" id="productInput" name="product_id" value="{{ id }}">
-              <input type="hidden" id="sellerInput" name="seller_id" value="{{ seller_id }}"> <!-- Updated to an empty value initially -->
-              <input type="hidden" id="quantityInput" name="quantity" value="1" min="1">
-              <button type="submit" class="btn btn-primary" onclick="submitAddToCart()">Add to Cart</button>
-          </form>
+          <input type="hidden" id="productId" name="pid" value="{{ id }}">
+          <input type="hidden" id="userId" name="user_id" value="{{ current_user.id }}">
+          <input type="hidden" id="sellerInput" name="seller_id" value="{{ seller_id }}"> <!-- Updated to an empty value initially -->
+          <input type="hidden" id="quantityInput" name="quantity" value="1" min="1">
+          <button type="submit" class="btn btn-primary" onclick="submitAddToCart();">Add to Cart</button>
           <script>
               function submitAddToCart() {
-                document.getElementById("addToCartForm").action = "{{ url_for('products.add_to_cart', pid=id) }}";
+                document.getElementById("addToCartForm").action = "{{ url_for('products.add_to_cart', pid=id) }}"
                 document.getElementById("addToCartForm").submit();
               }
-              function updateFormValues() {
-                  var selectedSeller = document.getElementById("sellerSelect");
-                  var quantityInput = document.getElementById("quantityInput");
-
-                  var selectedOption = selectedSeller.options[selectedSeller.selectedIndex];
-                  var selectedQuantity = quantityInput.value;
-
-                  // Check if a seller is selected
-                  if (selectedOption.value !== "") {
-                      // Set the hidden input value with the selected seller's value
-                      document.getElementById("sellerSelect").value = selectedOption.value;
-                      document.getElementById("quantityInput").value = selectedQuantity;
-                  } else {
-                      alert("Please select a seller first.");
-                      return false;
-                  }
-
-                  // Continue with form submission
-                  return true;
-              }
           </script>
-          {% if success_message %}
+        </form>
+          {% if success == 1 %}
           <div class="alert alert-success" role="alert">
             {{ success_message }}
           </div>
-        {% endif %}
+          {% endif %}
+        </form>
       {% endif %}
       </div>
     </div>
