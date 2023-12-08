@@ -91,6 +91,3 @@ CREATE TABLE BoughtLineItems (
     PRIMARY KEY (id, sid, pid)
 );
 
-
-
-

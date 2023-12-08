@@ -60,7 +60,7 @@
           <a href="{{ url_for('users.profile') }}" type="button" class="btn btn-light">Profile</a>
           <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a>
           <a href="{{ url_for('carts.redirect_to_user_cart') }}" type="button" class="btn btn-light">Cart</a>
-          <a href="{{ url_for('carts.orders', uid=current_user.id) }}" type="button" class="btn btn-light">Orders</a>
+          <a href="{{ url_for('carts.orders', uid=current_user.get_id()) }}" type="button" class="btn btn-light">Orders</a>
           <a href="{{ url_for('users.my_purchases') }}" type="button" class="btn btn-light">Purchases</a>
           <a href="{{ url_for('users.logout') }}" type="button" class="btn btn-light">Log out</a>
         {% else %}

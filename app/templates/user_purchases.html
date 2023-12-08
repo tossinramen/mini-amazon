@@ -32,6 +32,7 @@
       <th scope="col">Price</th>
       <th scope="col">Seller</th>
       <th scope="col">Fulfilled</th>
+      <th scope="col">Order Page</th>
     </tr>
   </thead>
   <tbody>
@@ -43,6 +44,8 @@
         <td>{{ purchase.price }}</td>
         <td><a href="{{ url_for('users.public_user_profile', user_id=purchase.seller_id) }}">{{ purchase.seller_name }}</a></td>
         <td>{{ purchase.fulfilled }}</td>
+        <td><a href="{{ url_for('carts.order_details', uid=current_user.get_id(), purchase_id=purchase.purchase_id) }}">Order Page</a></td>
+        
       </tr>
     {% endfor %}
   </tbody>

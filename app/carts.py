@@ -6,7 +6,7 @@ import random
 import hashlib
 
 from .models.cart import Cart
-from .models.line_item import LineItem
+from .models.purchase import Purchase
 
 from flask import Blueprint
 bp = Blueprint('carts', __name__)
@@ -15,12 +15,17 @@ bp = Blueprint('carts', __name__)
 def cart(uid):
     # user check
     # uid=current_user.get_id
+    # cart = Cart.get_by_uid(uid)
+    # cart_id = cart.id
     count = len(app.db.execute('''SELECT id FROM Users WHERE id = :uid''', uid = uid))
     if count > 0:
         # get current user's cart
         cart_items = Cart.get_items_by_uid(uid)
     else:
         cart_items = None
+
+    if cart_items is None:
+        cart_items = []  # ensure cart items is always an iterable
 
     # render cart pg with line items
     return render_template('carts.html', cart_items=cart_items, uid=uid)
@@ -52,10 +57,6 @@ def update_all_quantities():
 
 @bp.route('/remove_item/<int:id>/<int:pid>/<int:sid>', methods=['GET', 'POST'])
 def remove_item(id, pid, sid):
-    if not current_user.is_authenticated:
-        flash("You must be logged in to remove items.", 'danger')
-        return redirect(url_for('users.login'))
-
     app.db.execute('''
         DELETE FROM CartLineItems
         WHERE id = :id
@@ -82,22 +83,24 @@ def orders(uid):
     order_items = []
     used_end_parts = set() 
     for item in raw_order_items:
-  
-        hash_input = f"{item['purchase_id']}-{item['seller_id']}".encode()
+        fulfillment_time = item['fulfillment_time']
+        if fulfillment_time:
+            formatted_time = fulfillment_time.isoformat()
+            hash_input = f"{item['purchase_id']}-{formatted_time}".encode()
+        else:
+            hash_input = f"{item['purchase_id']}".encode()
+
         hash_object = hashlib.sha256(hash_input)
         base_order_end_part = hash_object.hexdigest()[:10]
 
-       
         order_end_part = base_order_end_part
         i = 0
         while order_end_part in used_end_parts:
             i += 1
             order_end_part = f"{base_order_end_part}-{i}"
 
-        used_end_parts.add(order_end_part) 
-
-        
-        order_number = f"ORDER #{item['purchase_id']}-{item['seller_id']}-{order_end_part}"
+        used_end_parts.add(order_end_part)
+        order_number = f"ORDER {item['purchase_id']}-{order_end_part}"
         item['order_number'] = order_number
         order_items.append(item)
 
@@ -106,15 +109,15 @@ def orders(uid):
 
 def get_orders_by_uid(uid, limit, offset):
     sql_query = '''
-        SELECT pur.id as purchase_id, bli.sid as seller_id,
+        SELECT pur.id as purchase_id,
                SUM(bli.price * bli.qty) as total_price,
-               BOOL_AND(bli.fulfilled) as all_fulfilled,  -- This will be TRUE only if all are TRUE
-               MAX(CASE WHEN bli.fulfilled THEN pur.time_purchased ELSE NULL END) as latest_fulfillment_time
+               BOOL_AND(bli.fulfilled) as all_fulfilled,
+               MAX(CASE WHEN bli.fulfilled THEN pur.time_purchased ELSE NULL END) as fulfillment_time
         FROM BoughtLineItems bli
         INNER JOIN Products p ON bli.pid = p.id
         INNER JOIN Purchases pur ON bli.id = pur.id
         WHERE pur.uid = :uid
-        GROUP BY pur.id, bli.sid
+        GROUP BY pur.id
         LIMIT :limit OFFSET :offset
     '''
     result = app.db.execute(sql_query, uid=uid, limit=limit, offset=offset)
@@ -122,10 +125,9 @@ def get_orders_by_uid(uid, limit, offset):
     for row in result:
         item = {
             'purchase_id': row[0], 
-            'seller_id': row[1], 
-            'total_price': row[2], 
-            'fulfilled': row[3],
-            'fulfillment_time': row[4] if row[3] else None
+            'total_price': row[1], 
+            'fulfilled': row[2],
+            'fulfillment_time': row[3]  
         }
         order_items.append(item)
     return order_items
@@ -133,7 +135,7 @@ def get_orders_by_uid(uid, limit, offset):
 
 def get_total_orders_count(uid):
     count_query = '''
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT pur.id)
         FROM BoughtLineItems bli
         INNER JOIN Purchases pur ON bli.id = pur.id
         WHERE pur.uid = :uid
@@ -176,3 +178,27 @@ def get_order_details(purchase_id):
         order_details.append(detail)
 
     return order_details
+    return redirect(url_for('carts.cart', uid=current_user.id))
+
+@bp.route('/submit_cart', methods=['POST'])
+def submit_cart():
+    user_id = current_user.id
+    # fetch cart items
+    cart_items = Cart.get_items_by_uid(user_id)
+    
+    id = Cart.get_id_by_uid(user_id)
+    Purchase.create(id, user_id)
+
+    purchase_id = id
+
+    for item in cart_items:
+        app.db.execute('''
+            INSERT INTO BoughtLineItems(id, sid, pid, qty, price)
+            VALUES(:purchase_id, :sid, :pid, :qty, :price)
+        ''', purchase_id=purchase_id, sid=item.sid, pid=item.pid, qty=item.qty, price=item.price)
+
+    # clear cart items
+    
+    Cart.clear_cart(user_id)
+
+    return redirect(url_for('users.user_purchases', uid=user_id))

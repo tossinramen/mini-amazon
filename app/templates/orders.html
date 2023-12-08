@@ -9,7 +9,6 @@
       <th scope="col">Order</th>
       <th scope="col">Total Price</th>
       <th scope="col">Order Fulfilled</th>
-      <th scope="col">Order Fulfillment Time</th>
     </tr>
   </thead>
   <tbody>
@@ -17,8 +16,13 @@
     <tr>
       <td><a href="{{ url_for('carts.order_details', uid=uid, purchase_id=item['purchase_id']) }}">{{ item.order_number }}</a></td>
       <td>${{ '%0.2f' % item.total_price }}</td>
-      <td>{{ 'Yes' if item.fulfilled else 'No' }}</td>
-      <td>{{ item.fulfillment_time if item.fulfilled else 'Order not fulfilled' }}</td>
+      <td>
+        {% if item.fulfilled and item.fulfillment_time %}
+          {{ item['fulfillment_time'].strftime("%Y-%m-%d %H:%M:%S") }}
+        {% else %}
+          Order not fulfilled
+        {% endif %}
+      </td>
     </tr>
     {% endfor %}
   </tbody>
