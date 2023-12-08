@@ -143,3 +143,12 @@ body {
     font-size: larger;
     font-weight: bold; 
   }
+
+  .cart-action-btn {
+    margin-right: 10px; /* Adjusts the right margin */
+}
+
+/* For the last button in a group to not have extra margin on the right */
+.cart-action-btn:last-child {
+    margin-right: 0;
+}

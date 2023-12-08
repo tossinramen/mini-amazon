@@ -1,7 +1,6 @@
 from werkzeug.security import generate_password_hash
 import csv
 from faker import Faker
-import pandas as pd
 import random
 
 num_users = 100
