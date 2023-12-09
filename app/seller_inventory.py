@@ -299,22 +299,25 @@ def update_quantity():
         app.db.execute(update_query, uid = uid, new_quantity = new_quantity, pid = pid)
 
     
-    # Perform the update query using the data provided
-
+    # going back to the seller inventory page
     return redirect(url_for('users.redirect_to_seller_inventory'))
 
 
+# simply redirecting to a new page where we can add a product
 @bp.route('/redirect_to_add_product_page', methods=['GET', 'POST'])
 def redirect_to_add_product_page():
     uid = current_user.id
     return redirect(url_for('seller_inventory.add_product_page', uid=uid))
 
+# rendering the add product page
 @bp.route('/add_product_page/<int:uid>', methods=['GET', 'POST'])
 def add_product_page(uid):
     return render_template('add_product.html')
 
+# this code runs when the add product button is pressed
 @bp.route('/add_product', methods=['GET', 'POST'])
 def add_product():
+    #scanning in all of the imputs
     uid = current_user.id
     p_name = request.form.get('name')
     price = request.form.get('price')
@@ -333,18 +336,19 @@ def add_product():
         ''', name=p_name)
     pid = rows[0][0] if rows else None
     
-    print(pid)
+    #if the product already exists
     if pid is not None:
-        # product_check = SellerInventory.get_by_uid_pid(uid, pid)
         query = '''SELECT pid
             FROM Seller_Inventory
             WHERE uid = :uid
             AND pid = :pid'''
         query_result = app.db.execute(query, uid = uid, pid = pid)
         product_check = query_result[0][0] if query_result else None
-        print(product_check)
+
         if product_check is not None:
-            return redirect(url_for('users.redirect_to_seller_inventory'))
+            # if the seller already has this item in inventory, abort
+            abort(400, "This item already exists in your inventory.")
+            # return redirect(url_for('users.redirect_to_seller_inventory'))
         else:
             # Product doesn't exist in the seller's inventory, add a new entry
             insert_query = '''
@@ -376,14 +380,14 @@ def add_product():
             subtag=subtag,
             image_url=picture
         )
-        # pid = result[0] if result else None
         rows = app.db.execute('''
                 SELECT id
                 FROM Products
                 WHERE name = :name
             ''', name=p_name)
         pid = rows[0][0] if rows else None
-        # Insert into Seller_Inventory
+
+        # also insert that product into Seller_Inventory
         if pid is not None:
             insert_inventory_query = '''
                 INSERT INTO Seller_Inventory (uid, pid, quantity)
@@ -393,6 +397,8 @@ def add_product():
 
     return redirect(url_for('users.redirect_to_seller_inventory'))
 
+# this is the button in seller orders that will toggle the fulfillment of the order.
+# the decision to allow toggling from fulfilled/not fulfilled was made for demonstration purposes.
 @bp.route('/toggle_fulfillment/<int:order_id>/<int:pid>/<int:fulfilled>/', methods=['GET', 'POST'])
 def toggle_fulfillment(order_id, pid, fulfilled):
     uid = current_user.id

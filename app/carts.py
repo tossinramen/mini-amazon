@@ -76,16 +76,15 @@ def update_all_quantities():
     return redirect(url_for('carts.cart', uid=current_user.id))
 
 # remove an item from cart
-@bp.route('/remove_item/<int:id>/<int:pid>/<int:sid>', methods=['GET', 'POST'])
+@bp.route('/remove_item/<int:id>/<int:pid>/<int:sid>', methods=['POST'])
 def remove_item(id, pid, sid):
     # delete specified item
     app.db.execute('''
-        DELETE FROM CartLineItems
-        WHERE id = :id
-        AND pid = :pid
-        AND sid = :sid
-        ''', id=id, pid=pid, sid=sid, uid=current_user.id)
-    # redirect to cart pg
+            DELETE FROM CartLineItems
+            WHERE id = :id
+            AND pid = :pid
+            AND sid = :sid
+            ''', id=id, pid=pid, sid=sid, uid=current_user.id)
     return redirect(url_for('carts.cart', uid=current_user.id))
 
 
