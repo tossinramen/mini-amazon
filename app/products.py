@@ -161,7 +161,7 @@ def add_to_cart(pid):
     uid = request.form.get('user_id')
     # pid = request.form.get('product_id')
     seller_id = request.form.get('seller_id')
-    quantity = request.form.get('quantity')
+    quantity = int(request.form.get('quantity'))
 
     if not seller_id and not quantity:
         abort(400, "Seller and quantity are required.")
@@ -172,7 +172,7 @@ def add_to_cart(pid):
     if not quantity:
         abort(400, "Quantity is required.")
 
-    seller_quantity = get_seller_quantity(uid, pid)
+    seller_quantity = get_seller_quantity(seller_id, pid)
 
     if quantity > seller_quantity:
         abort(400, "Seller does not have the requested quantity.")
@@ -189,17 +189,20 @@ def add_to_cart(pid):
     SET qty = cartlineitems.qty + :quantity;
     '''
 
-    app.db.execute(cart_query, cart_id=cart_id, uid=uid, seller_id=seller_id, pid=pid, quantity=quantity)
-    return render_template('carts.html', uid=uid)
+    app.db.execute(cart_query, cart_id=cart_id, seller_id=seller_id, pid=pid, quantity=quantity)
+    # return render_template('carts.html', uid=uid)
+    return redirect(url_for('carts.cart', uid=uid))
     # return redirect(url_for('products.product_details', pid=pid, success_message="Added to cart successfully.", success=1))
 
-def get_seller_quantity(uid, pid):
+def get_seller_quantity(sid, pid):
     query = '''
     SELECT quantity
     FROM seller_inventory
-    WHERE uid = :uid AND pid = :pid
+    WHERE uid = :sid AND pid = :pid
     '''
-    result = app.db.execute(query, uid=uid, pid=pid)
+    result = app.db.execute(query, sid=sid, pid=pid)
+    if result == []:
+        return 0
     return result[0][0]
 
 def get_cart_id(uid):
