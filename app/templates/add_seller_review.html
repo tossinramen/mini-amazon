@@ -5,13 +5,20 @@
   <div class="container mt-4">
     <h2>Add New Review</h2>
 
-    <form method="post" action="{{ url_for('seller_rating.insert_seller_data') }}">
+    <form method="post" action="{{ url_for('seller_rating.insert_seller_data') }}" enctype="multipart/form-data">
       <input type="hidden" name="sid" value="{{sid}}">
 
       <div class="form-group">
         <label for="description">Description</label>
         <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
       </div>
+
+      <div class="form-group">
+        <label for="image">Image URL (Optional)</label>
+        <input type="text" class="form-control" id="image_url" name="image_url" placeholder="Enter image link">
+      </div>
+
+
       <html lang="en">
         <head>
             <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -30,7 +37,7 @@
           <input type="radio" id="star5" name="stars" value="5" required>
           <label for="star5"></label>
         </div>
-      </div>
+    </div>
 
       <button type="submit">Submit Review</button>
     </form>

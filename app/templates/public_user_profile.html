@@ -116,7 +116,13 @@
               <tr>
                 <td class="reviewer-name">{{rating.reviewer_name}}</td>
                 <td>{{rating.stars}}</td>
-                <td>{{rating.description}}</td>
+                <td>{{rating.description}}<br>
+                    {% if rating.image_url %}
+                      <img src="{{ rating.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+                    {% else %}
+                      No Image
+                    {% endif %}
+                  </td>
                 <td>{{rating.upvotes}}</td>
                 <td>{{rating.downvotes}}</td>
                 <td>{{rating.time_reviewed}}</td>
@@ -147,7 +153,13 @@
             <tr>
                 <td>{{ user_profile_link(review.reviewer_id, review.reviewer_name) }}</td>
                 <td>{{ review.stars }} stars</td>
-                <td>{{ review.description }}</td>
+                <td>{{ review.description }}<br>
+                    {% if review.image_url %}
+                      <img src="{{ review.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+                    {% else %}
+                      No Image
+                    {% endif %}
+                  </td>
                 <td>{{ review.time_reviewed }}</td>
             </tr>
             {% else %}
@@ -185,7 +197,13 @@
             <tr>
                 <td>{{ review.name }}</td>
                 <td>{{ review.stars }} stars</td>
-                <td>{{ review.description }}</td>
+                <td>{{ review.description }}<br>
+                    {% if review.image_url %}
+                      <img src="{{ review.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+                    {% else %}
+                      No Image
+                    {% endif %}
+                  </td>
                 <td>{{ user_profile_link(review.seller_id, review.seller_name) }}</td>
                 <td>{{ review.time_reviewed }}</td>
             </tr>

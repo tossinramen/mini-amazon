@@ -62,6 +62,7 @@
             <th scope="col">Reviewer Name</th>
             <th scope="col">Stars</th>
             <th scope="col">Description</th>
+            <th scope="col">Image</th>
             <th scope="col">Upvotes</th>
             <th scope="col">Downvotes</th>
             <th scope="col">Time Reviewed</th>
@@ -74,7 +75,13 @@
             <tr>
               <td>{{rating.firstname}} {{rating.lastname}}</td>
               <td>{{rating.stars}}</td>
-              <td>{{rating.description}}</td>
+              <td>{{rating.description}}<br>
+                {% if rating.image_url %}
+                  <img src="{{ rating.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+                {% else %}
+                  No Image
+                {% endif %}
+              </td>
               <td>{{rating.upvotes}}</td>
               <td>{{rating.downvotes}}</td>
               <td>{{rating.time_reviewed}}</td>
@@ -108,7 +115,13 @@
       <tr>
         <td>{{rating.firstname}} {{rating.lastname}}</td>
         <td>{{rating.stars}}</td>
-        <td>{{rating.description}}</td>
+        <td>{{rating.description}}<br>
+          {% if rating.image_url %}
+            <img src="{{ rating.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+          {% else %}
+            No Image
+          {% endif %}
+        </td>
         <td>{{rating.upvotes}}</td>
         <td>{{rating.downvotes}}</td>
         <td>{{rating.time_reviewed}}</td>
