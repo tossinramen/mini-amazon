@@ -144,10 +144,12 @@ def user_purchases(uid):
 @bp.route('/seller_page')
 def redirect_to_seller_inventory():
     return redirect(url_for('seller_inventory.inventory', uid=current_user.get_id()))
+
 # Redirects to the seller's past orders page
 @bp.route('/my_past_seller_orders')
 def my_past_seller_orders():
     return redirect(url_for('seller_inventory.seller_orders', uid=current_user.get_id()))
+
 #redirects to the user's purchases page based on uid
 @bp.route('/redirect_to_user_purchases', methods=['POST'])
 def redirect_to_user_purchases():

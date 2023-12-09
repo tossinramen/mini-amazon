@@ -25,9 +25,11 @@ bp = Blueprint('seller_inventory', __name__)
 #                            page=page, per_page=per_page, total=total_items,
 #                            total_pages=total_pages, uid=uid)
 
+#updated inventory page with sort and search functionality implemented
 @bp.route('/seller_page/<int:uid>')
 def inventory(uid):
     PER_PAGE = 10
+    # the default page is generated if no search or sort arguments were passed in
     page = request.args.get('page', 1, type=int)
     sort_type = request.args.get('sort_type', default='pid', type=str)
     sort_order = request.args.get('sort_order', default='desc', type=str)
