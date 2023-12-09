@@ -6,15 +6,14 @@ import random
 num_users = 100
 num_products = 2000
 num_purchases = 2500
-num_product_ratings = 1000
+num_product_ratings = 10000
 num_seller_ratings = 1000
 
 Faker.seed(0)
 fake = Faker()
 
 # api_key = "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"
-# client = OpenAI(api_key=api_key)
-
+# openai.api_key = api_key
 
 def get_csv_writer(f):
     return csv.writer(f, dialect='unix')
@@ -43,6 +42,7 @@ def gen_users(num_users):
             writer.writerow([uid, email, password, firstname, lastname, address, balance])
         print(f'{num_users} generated')
     return available_users
+
 
 
 def gen_products(num_products):
@@ -129,6 +129,7 @@ def gen_product_tags(category):
     return tag, subtag
 
 
+
 # def gen_purchases(num_purchases, available_pids):
 #     with open('Purchases.csv', 'w') as f:
 #         writer = get_csv_writer(f)
@@ -164,15 +165,15 @@ def gen_sellers(user_ids, probability):
     return  available_sellers
 
 
-def gen_seller_inventory(seller_uids, product_uids, max_quantity_per_product):
+def gen_seller_inventory(seller_uids, product_uids, max_products, max_quantity_per_product):
     with open('Seller_Inventory.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('Seller Inventory...', end=' ', flush=True)
-        for product_uid in product_uids:
-            num_sellers = fake.random_int(min=1, max=len(seller_uids)//10)
-            selected_sellers = random.sample(seller_uids, num_sellers)
+        for seller_uid in seller_uids:
+            num_products = fake.random_int(min=0, max=max_products)
+            selected_products = random.sample(product_uids, num_products)
 
-            for seller_uid in selected_sellers:
+            for product_uid in selected_products:
                 quantity = fake.random_int(min=1, max=max_quantity_per_product)
                 writer.writerow([seller_uid, product_uid, quantity])
 
@@ -331,7 +332,7 @@ available_users = gen_users(num_users)
 available_pids = gen_products(num_products)
 # gen_purchases(num_purchases, available_pids)
 available_seller_ids = gen_sellers(available_users, 0.3) 
-gen_seller_inventory(available_seller_ids, available_pids, 1000) 
+gen_seller_inventory(available_seller_ids, available_pids, 100, 10000) 
 available_purchase_ids = gen_purchases(available_users, 1000)
 gen_bought_line_items(available_purchase_ids, available_seller_ids, available_pids, "w")
 available_cids = gen_carts(available_users, 1000)

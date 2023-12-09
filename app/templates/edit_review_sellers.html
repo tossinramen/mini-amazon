@@ -24,7 +24,12 @@
   <tbody>
     {% for rating in s_ratings%}
       <tr>
-        <th scope="row">{{rating.seller_firstname}} {{rating.seller_lastname}}</th>
+        <th scope="row">
+          <!-- Link to Seller's Public Profile -->
+          <a href="{{ url_for('users.public_user_profile', user_id=rating.sid) }}">
+            {{ rating.seller_firstname }} {{ rating.seller_lastname }}
+          </a>
+        </th>
         <td>{{rating.stars}}</td>
         <td>{{rating.description}}</td>
         <td>{{rating.upvotes}}</td>

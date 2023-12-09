@@ -1,0 +1,38 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h2>Add New Review</h2>
+
+    <form method="post" action="{{ url_for('product_rating.insert_data') }}">
+      <input type="hidden" name="pid" value="{{ pid }}">
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+      </div>
+      <html lang="en">
+        <head>
+            <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+        </head>
+      <div class="form-group">
+        <label for="stars">Stars</label>
+        <div class="star-rating">
+          <input type="radio" id="star1" name="stars" value="1" required>
+          <label for="star1"></label>
+          <input type="radio" id="star2" name="stars" value="2" required>
+          <label for="star2"></label>
+          <input type="radio" id="star3" name="stars" value="3" required>
+          <label for="star3"></label>
+          <input type="radio" id="star4" name="stars" value="4" required>
+          <label for="star4"></label>
+          <input type="radio" id="star5" name="stars" value="5" required>
+          <label for="star5"></label>
+        </div>
+      </div>
+
+      <button type="submit">Submit Review</button>
+    </form>
+  </div>
+{% endblock %}

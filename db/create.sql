@@ -88,6 +88,7 @@ CREATE TABLE BoughtLineItems (
     qty INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     fulfilled BOOLEAN DEFAULT FALSE,
+    
     PRIMARY KEY (id, sid, pid)
 );
 
