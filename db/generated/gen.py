@@ -275,7 +275,7 @@ def gen_product_ratings(num_product_ratings, available_pids):
 
         for id in range(num_product_ratings):
             while True:
-                    num = random.randrange(1,5)
+                    num = random.randrange(1,4)
                     upvote_num = random.randrange(0, num_users)
                     downvote_num = random.randrange(0, num_users - upvote_num)
                     uid = fake.random_int(min=0, max=num_users-1)
@@ -291,7 +291,8 @@ def gen_product_ratings(num_product_ratings, available_pids):
                         downvotes = downvote_num
                         stars = random.randrange(1,5)
                         time_reviewed = fake.date_time()
-                        writer.writerow([uid, pid, description, upvotes, downvotes, stars, time_reviewed])
+                        image_url = f"https://picsum.photos/200/200/?random={id}"
+                        writer.writerow([uid, pid, description, upvotes, downvotes, stars, time_reviewed, image_url])
                         break
         print(f'{num_product_ratings} generated')
     return
@@ -304,7 +305,7 @@ def gen_seller_ratings(num_seller_ratings, available_pids):
 
         for id in range(num_seller_ratings):
             while True:
-                    num = random.randrange(1,5)
+                    num = random.randrange(1,4)
                     upvote_num = random.randrange(0, num_users)
                     downvote_num = random.randrange(0, num_users - upvote_num)
                     uid = fake.random_int(min=0, max=num_users-1)
@@ -320,7 +321,8 @@ def gen_seller_ratings(num_seller_ratings, available_pids):
                         downvotes = downvote_num
                         stars = random.randrange(1,5)
                         time_reviewed = fake.date_time()
-                        writer.writerow([uid, sid, description, upvotes, downvotes, stars, time_reviewed])
+                        image_url = f"https://picsum.photos/200/200/?random={id}"
+                        writer.writerow([uid, sid, description, upvotes, downvotes, stars, time_reviewed, image_url])
                         break
         print(f'{num_seller_ratings} generated')
     return

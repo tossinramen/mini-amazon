@@ -17,6 +17,7 @@
       <th scope="col">Description</th>
       <th scope="col">Upvotes</th>
       <th scope="col">Downvotes</th>
+      <th scope="col">Image</th>
       <th scope="col">Time Reviewed</th>
     </tr>
   </thead>
@@ -34,8 +35,14 @@
         <td>{{rating.description}}</td>
         <td>{{rating.upvotes}}</td>
         <td>{{rating.downvotes}}</td>
+        <td>  
+          {% if rating.image_url %}
+            <img src="{{ rating.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+          {% else %}
+            No Image
+          {% endif %}
+        </td>
         <td>{{rating.time_reviewed}}</td>
-        <td><a href="{{ url_for('seller_rating.redirect_to_edit_review_sellers', sid=rating.sid) }}"  type="button" class="btn btn-light">Edit Review</a></td>
       </tr>
     {% endfor %}
   </tbody>
@@ -51,10 +58,30 @@
         <label for="description">Description:</label>
         <input type="text" name="description"><br>
 
-        <label for="stars">Stars:</label>
-        <input type="text" name="stars"><br>
+        <div class="form-group">
+          <label for="image">Image URL (Optional)</label>
+          <input type="text" class="form-control" id="image_url" name="image_url" placeholder="Enter image link">
+        </div>
+
+        <div class="form-group">
+          <label for="stars">Stars</label>
+          <div class="star-rating">
+            <input type="radio" id="star1" name="stars" value="1" required>
+            <label for="star1"></label>
+            <input type="radio" id="star2" name="stars" value="2" required>
+            <label for="star2"></label>
+            <input type="radio" id="star3" name="stars" value="3" required>
+            <label for="star3"></label>
+            <input type="radio" id="star4" name="stars" value="4" required>
+            <label for="star4"></label>
+            <input type="radio" id="star5" name="stars" value="5" required>
+            <label for="star5"></label>
+          </div>
+        </div>
+        
         
         <input type="hidden" name="sid" value="{{rating.sid}}">
+        <input type="hidden" name="referring_page_sellers" value="{{referring_page_sellers}}">
         <input type="submit" value="Update">
     </form>
     {% endfor %}

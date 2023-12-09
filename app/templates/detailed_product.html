@@ -47,23 +47,22 @@
         </tbody>
         </table>
   </div>
-  <h2>Reviews:</h2>
   {% if allowed == 1 %}
     {% if reviewed_allowed == 1 %}
     <div class="add-review-button">
-      
         <a href="{{ url_for('product_rating.redirect_to_add_review', pid=pid) }}" class="btn btn-primary">Add Review</a>
         <br><br>
       </div>
     {% else %}
-      <p class="message">You can only add one review per product.</p>
       <h2>My Review:</h2>
+      <p class="message">You can only add one review per product.</p>
       <table class='table table-hover table-bordered container'>
         <thead class="thead-dark">
           <tr>
             <th scope="col">Reviewer Name</th>
             <th scope="col">Stars</th>
             <th scope="col">Description</th>
+            <th scope="col">Image</th>
             <th scope="col">Upvotes</th>
             <th scope="col">Downvotes</th>
             <th scope="col">Time Reviewed</th>
@@ -76,12 +75,19 @@
             <tr>
               <td>{{rating.firstname}} {{rating.lastname}}</td>
               <td>{{rating.stars}}</td>
-              <td>{{rating.description}}</td>
+              <td>{{rating.description}}<br>
+                {% if rating.image_url %}
+                  <img src="{{ rating.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+                {% else %}
+                  No Image
+                {% endif %}
+              </td>
               <td>{{rating.upvotes}}</td>
               <td>{{rating.downvotes}}</td>
               <td>{{rating.time_reviewed}}</td>
               <td>
-                <a href="{{ url_for('product_rating.redirect_to_edit_review', pid=rating.pid) }}" class="btn btn-light">Edit Review</a>
+                <a href="{{ url_for('product_rating.redirect_to_edit_review', pid=rating.pid) }}" class="btn btn-light">Edit</a>
+                <a href="{{ url_for('product_rating.redirect_to_delete_review', pid=rating.pid) }}" class="btn btn-light">Delete</a>
               </td>
             </tr>
           {% endfor %}
@@ -91,6 +97,7 @@
   {% else %}
     <p class="message">You can only add a review if you have bought the product.</p>
   {% endif %}
+<h2>Other Reviews:</h2> 
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
@@ -108,7 +115,13 @@
       <tr>
         <td>{{rating.firstname}} {{rating.lastname}}</td>
         <td>{{rating.stars}}</td>
-        <td>{{rating.description}}</td>
+        <td>{{rating.description}}<br>
+          {% if rating.image_url %}
+            <img src="{{ rating.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+          {% else %}
+            No Image
+          {% endif %}
+        </td>
         <td>{{rating.upvotes}}</td>
         <td>{{rating.downvotes}}</td>
         <td>{{rating.time_reviewed}}</td>

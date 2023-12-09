@@ -19,6 +19,7 @@
       <th scope="col">Upvotes</th>
       <th scope="col">Downvotes</th>
       <th scope="col">Time Reviewed</th>
+      <th scope="col">Actions</th>
     </tr>
   </thead>
   
@@ -29,11 +30,20 @@
           {{ rating.seller_firstname }} {{ rating.seller_lastname }}</a></td>
         
         <td>{{rating.stars}}</td>
-        <td>{{rating.description}}</td>
+        <td>{{rating.description}}<br>
+          {% if rating.image_url %}
+            <img src="{{ rating.image_url }}" alt="Review Image" style="width:100px; height:auto;"> <!-- Display Image -->
+          {% else %}
+            No Image
+          {% endif %}
+        </td>
         <td>{{rating.upvotes}}</td>
         <td>{{rating.downvotes}}</td>
         <td>{{rating.time_reviewed}}</td>
-        <td><a href="{{ url_for('seller_rating.redirect_to_edit_review_sellers', sid=rating.sid) }}"  type="button" class="btn btn-light">Edit Review</a></td>
+        <td>
+          <a href="{{ url_for('seller_rating.redirect_to_edit_review_sellers', sid=rating.sid) }}"  type="button" class="btn btn-light">Edit</a>
+          <a href="{{ url_for('seller_rating.redirect_to_delete_review_sellers', sid=rating.sid) }}"  type="button" class="btn btn-light">Delete</a>
+        </td>
       </tr>
     {% endfor %}
   </tbody>
