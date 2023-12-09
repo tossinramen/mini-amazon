@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, abort
 from flask import current_app as app
+from flask_login import current_user
 
 bp = Blueprint('products', __name__)
 
@@ -152,7 +153,7 @@ def product_details(pid):
             FROM Product_Rating pr
             JOIN Products p ON p.id = pr.pid
             JOIN Users u ON u.id = pr.uid
-            WHERE pid = {pid}
+            WHERE pid = {pid} AND NOT pr.uid = {current_user.id}
             ORDER BY time_reviewed DESC
             LIMIT :limit OFFSET :offset
     '''
@@ -162,6 +163,34 @@ def product_details(pid):
             JOIN Users u ON u.id = pr.uid
             WHERE pid = {pid}
     '''
+    check_bought_query = f''' SELECT COUNT(*)
+            FROM BoughtLineItems b
+            JOIN Purchases p ON p.id = b.id
+            WHERE pid = {pid} AND p.uid = {current_user.id}
+    '''
+    check_reviewed_query = f''' SELECT COUNT(*)
+            FROM Product_Rating pr
+            WHERE pid = {pid} AND uid = {current_user.id}
+    '''
+    check = app.db.execute(check_bought_query)
+    if int(check[0][0]) > 0:
+        allowed = 1
+    else:
+        allowed = 0
+    reviewed_check = app.db.execute(check_reviewed_query)
+    if reviewed_check is not None and int(reviewed_check[0][0]) > 0:
+        reviewed_allowed = 0
+    else:
+        reviewed_allowed = 1
+    user_rating_query = f'''
+    SELECT pr.uid as uid, pr.pid as pid, u.firstname as firstname, u.lastname as lastname, p.name as product_name, pr.description, pr.upvotes, pr.downvotes, pr.stars, pr.time_reviewed
+            FROM Product_Rating pr
+            JOIN Products p ON p.id = pr.pid
+            JOIN Users u ON u.id = pr.uid
+            WHERE pid = {pid} AND pr.uid = {current_user.id}
+            ORDER BY time_reviewed DESC
+    '''
+    user_rating_info = app.db.execute(user_rating_query)    
     total_result = app.db.execute(total_query)
     total = total_result[0][0] if total_result else 0
     rating_info = app.db.execute(rating_query, limit=PER_PAGE, offset=offset)
@@ -176,7 +205,11 @@ def product_details(pid):
                            avg_stars=avg_stars,
                            seller_info=seller_info,
                            rating_info=rating_info,
-                           num_ratings=num_ratings,
+                           user_rating_info=user_rating_info,
+                           num_ratings=num_ratings, 
                            total = total,
                            page=page,
-                           per_page=PER_PAGE)
+                           per_page=PER_PAGE,
+                           allowed=allowed,
+                           reviewed_allowed = reviewed_allowed,
+                           )

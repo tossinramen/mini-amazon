@@ -76,6 +76,47 @@
     </table>
 
     <h3>Seller Reviews:</h3>
+    {% if allowed == 1 %}
+      {% if reviewed_allowed == 1 %}
+      <div class="add-review-button">
+          <a href="{{ url_for('seller_rating.redirect_to_add_seller_review', sid=sid) }}" class="btn btn-primary">Add Review</a>
+      </div>
+      {% else %}
+        <p class="message">You can only add one review per seller.</p>
+        <h2>My Review:</h2>
+        <table class='table table-hover table-bordered container'>
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">Reviewer Name</th>
+              <th scope="col">Stars</th>
+              <th scope="col">Description</th>
+              <th scope="col">Upvotes</th>
+              <th scope="col">Downvotes</th>
+              <th scope="col">Time Reviewed</th>
+              <th scope="col">Actions</th>
+            </tr>
+          </thead>
+        
+          <tbody>
+            {% for rating in current_user_rating_info%}
+              <tr>
+                <td>{{rating.reviewer_name}}</td>
+                <td>{{rating.stars}}</td>
+                <td>{{rating.description}}</td>
+                <td>{{rating.upvotes}}</td>
+                <td>{{rating.downvotes}}</td>
+                <td>{{rating.time_reviewed}}</td>
+                <td>
+                  <a href="{{ url_for('seller_rating.redirect_to_edit_review_sellers', sid=rating.sid) }}" class="btn btn-light">Edit Review</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>  
+      {% endif %}  
+    {% else %}
+      <p class="message">You can only add a review if you have bought from the seller.</p>
+    {% endif %}
     <table class="profile-table">
         <thead>
             <tr>

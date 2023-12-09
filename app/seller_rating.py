@@ -1,5 +1,6 @@
 from flask import render_template, redirect, url_for, flash, request, current_app as app
 from flask_login import current_user
+from flask_wtf import FlaskForm
 import datetime
 
 from .models.product import Product
@@ -7,11 +8,15 @@ from .models.seller_rating import Seller_Rating
 from .models.purchase import Purchase
 from .models.user import User
 
+from flask import session
 from flask import Blueprint
 from flask import jsonify
+from flask import request
+from flask import render_template, redirect, url_for, flash, request, current_app as app
+from flask_login import current_user
 bp = Blueprint('seller_rating', __name__)
 PER_PAGE = 10
-
+MAX_DESCRIPTION_LENGTH = 255
 @bp.route('/seller_rating')
 def seller_rating():
     page = request.args.get('page', 1, type=int)
@@ -65,3 +70,47 @@ def update_data():
     # Perform the update query using the data provided
 
     return redirect(url_for('seller_rating.seller_rating'))
+
+@bp.route('/redirect_to_add_seller_review', methods=['GET', 'POST'])
+def redirect_to_add_seller_review():
+    sid = request.args.get('sid')
+    print(sid)
+    return redirect(url_for('seller_rating.add_seller_review', sid=sid))
+
+#Get the current rating to view before updating
+@bp.route('/add_seller_review/<int:sid>', methods=['GET', 'POST'])
+def add_seller_review(sid):
+    uid = current_user.id   
+    return render_template('add_seller_review.html', sid=sid)
+
+
+@bp.route('/insert_sr', methods=['GET', 'POST'])
+def insert_seller_data():
+    if request.method == 'POST' or request.method == 'GET':
+        description = request.form.get('description')
+        stars = request.form.get('stars')
+        uid = current_user.id
+        sid = request.form.get('sid')
+        try:
+            # Validate input
+            if not (1 <= int(stars) <= 5):
+                raise ValueError("Stars must be between 1 and 5.")
+
+            if len(description) > MAX_DESCRIPTION_LENGTH:
+                raise ValueError(f"Description exceeds the maximum length of {MAX_DESCRIPTION_LENGTH} characters.")
+            
+            # Insert a new record into the Seller_Rating table
+            insert_query = '''
+                INSERT INTO Seller_Rating (uid, sid, description, upvotes, downvotes, stars, time_reviewed)
+                VALUES (:uid, :sid, :description, 0, 0, :stars, current_timestamp)
+            '''
+            app.db.execute(insert_query, description = description, stars = stars, sid = sid, uid = uid)
+            # Commit the transaction
+
+            return redirect(url_for('users.public_user_profile', user_id = sid))
+
+        except (ValueError, Exception) as error:
+            print(f"Error: {error}")
+
+    return render_template('add_seller_review.html')      
+

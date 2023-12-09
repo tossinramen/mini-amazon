@@ -249,6 +249,34 @@ def public_user_profile(user_id):
     is_seller_result = app.db.execute(is_seller_query, user_id=user_id)
     is_seller = is_seller_result[0][0] > 0 if is_seller_result else False
 
+    check_bought_query = f''' SELECT COUNT(*)
+            FROM BoughtLineItems b
+            JOIN Purchases p ON p.id = b.id
+            WHERE sid = :sid AND p.uid = :uid
+    '''
+    check_reviewed_query = f''' SELECT COUNT(*)
+            FROM Seller_Rating pr
+            WHERE sid = :sid AND uid = :uid
+    '''
+    check = app.db.execute(check_bought_query, sid=user_id, uid=current_user.id)
+    if int(check[0][0]) > 0:
+        allowed = 1
+    else:
+        allowed = 0
+    reviewed_check = app.db.execute(check_reviewed_query, sid=user_id, uid=current_user.id)
+    if reviewed_check is not None and int(reviewed_check[0][0]) > 0:
+        reviewed_allowed = 0
+    else:
+        reviewed_allowed = 1
+    current_user_rating_query = f'''
+    SELECT u.id AS reviewer_id, sr.sid AS sid, u.firstname || ' ' || u.lastname AS reviewer_name, sr.description as description, sr.stars as stars, sr.time_reviewed as time_reviewed, sr.upvotes as upvotes, sr.downvotes as downvotes
+        FROM Seller_Rating sr
+        JOIN Users u ON sr.uid = u.id
+        WHERE sr.sid = :sid AND sr.uid = :uid 
+    '''
+    
+    current_user_rating_info = app.db.execute(current_user_rating_query, sid=user_id, uid=current_user.id)
+
     seller_info = None
     seller_reviews = None
     if is_seller:
@@ -271,8 +299,9 @@ def public_user_profile(user_id):
         ORDER BY sr.time_reviewed DESC  
         '''
         seller_reviews = app.db.execute(seller_reviews_query, user_id=user_id)
+        
 
-    return render_template('public_user_profile.html', user_info=user_info, user_reviews=user_reviews, seller_info=seller_info, seller_reviews=seller_reviews)
+    return render_template('public_user_profile.html', user_info=user_info, user_reviews=user_reviews, seller_info=seller_info, seller_reviews=seller_reviews, allowed=allowed, reviewed_allowed=reviewed_allowed, sid=user_id, current_user_rating_info=current_user_rating_info)
 
 @bp.context_processor
 def context_processor():
