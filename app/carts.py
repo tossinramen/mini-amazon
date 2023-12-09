@@ -89,8 +89,6 @@ def remove_item(id, pid, sid):
     return redirect(url_for('carts.cart', uid=current_user.id))
 
 
-
-
 # route to view orders for a user
 PER_PAGE = 10
 @bp.route('/orders/<int:uid>')
@@ -345,7 +343,7 @@ def add_to_wishlist(id, pid, sid):
 
 @bp.route('/view_wishlist/<int:uid>')
 def view_wishlist(uid):
-    # Retrieve wishlist items for the user
+    # retrieve wishlist items for the user
     wishlist_items = app.db.execute(
         "SELECT Wishes.id as id, Products.id as pid, Products.name as p_name, CONCAT(users.firstname, ' ', users.lastname) AS name, price FROM Wishes, Users, Products  WHERE Wishes.pid = Products.id AND Wishes.uid = :uid and Users.id = Wishes.uid",
         uid=uid

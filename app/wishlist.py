@@ -23,22 +23,12 @@ def wishes():
 #         # add item to wishlist
 #         WishListItem.register(current_user.id, pid, datetime.datetime.now())
 #     return redirect(url_for('wishes.wishes'))
-
-@bp.route('/remove_from_wishlist/<int:pid>', methods=['POST'])
-def remove_from_wishlist(pid):
-    # Remove item from wishlist
-    WishListItem.remove(current_user.id, pid)
-    return redirect(url_for('wishes.wishes'))
-'''
-@bp.route('/add_to_cart/<int:pid>', methods=['POST'])
-def add_to_cart(id, pid, sid, price):
-    # Remove item from wishlist
-    app.db.execute(''''''
-            INSERT INTO CartLineItems(id, sid, pid, qty, price)
-            VALUES(:id, :pid, :sid, :pid, :qty, :price)'''''', id = id, sid=sid, pid=pid, qty=1, price=price)
-    WishListItem.remove(current_user.id, pid)
-    return redirect(url_for('wishes.wishes'))
-'''
+#
+# @bp.route('/remove_from_wishlist/<int:pid>', methods=['POST'])
+# def remove_from_wishlist(pid):
+      # remove item from wishlist
+#     WishListItem.remove(current_user.id, pid)
+#     return redirect(url_for('wishes.wishes'))
 
 @bp.route('/product_details/<int:pid>', methods=['GET', 'POST'])
 def product_details(pid):
@@ -82,7 +72,7 @@ def product_details(pid):
                            avg_stars=avg_stars,
                            seller_info=seller_info)
 
-# remove an item from cart
+# remove an item from wishlist
 @bp.route('/remove_item/<int:id>', methods=['GET', 'POST'])
 def remove_item(id):
     # delete specified item
@@ -92,3 +82,24 @@ def remove_item(id):
         ''', id=id)
     # redirect to cart pg
     return redirect(url_for('carts.view_wishlist', uid=current_user.id))
+
+@bp.route('/move_to_cart/<int:id>/<int:pid>', methods=['POST'])
+def move_to_cart(id, pid):
+    # retrieve cart ID for the current user
+    cart_result = app.db.execute('''
+        SELECT id FROM Carts WHERE uid = :uid
+        ''', uid=current_user.id)
+    cart_id = cart_result[0][0]
+    # delete specified item from wishlist
+    app.db.execute('''
+        DELETE FROM Wishes
+        WHERE id = :id
+        ''', id=id)
+
+    # add item to cart
+    app.db.execute('''
+        INSERT INTO CartLineItems (id, sid, pid, qty, price)
+        VALUES (:cart_id, (SELECT uid FROM Seller_Inventory WHERE pid = :pid LIMIT 1), :pid, 1, (SELECT price FROM Products WHERE id = :pid))
+        ''', cart_id=cart_id, pid=pid)
+
+    return redirect(url_for('carts.view_wishlist', uid= current_user.id))

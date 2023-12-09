@@ -58,8 +58,7 @@
           <td>${{ '%0.2f' % item_total }}</td>
           <!-- remove button -->
           <td>
-            <form method = "POST" action="{{ url_for('carts.remove_item', id=item.id, pid=item.pid, sid=item.sid) }} ">
-              <input type="hidden" name="user_id" value="{{ uid }}">
+            <form method="POST" action="{{ url_for('carts.remove_item', id=item.id, pid=item.pid, sid=item.sid) }}">
               <button type="submit" class="btn remove-btn">
                 <span class="remove-icon">&times;</span>
               </button>
@@ -91,7 +90,7 @@
   <div class="text-right">
     <a href="{{ url_for('carts.view_wishlist', uid=current_user.id) }}" class="btn btn-success btn-lg cart-action-btn">View Wishlist</a>
     <button type="submit" class="btn btn-info btn-lg cart-action-btn">Update Quantities</button>
-    <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.redirect_to_user_cart') }}">Submit Cart</button>
+    <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.submit_cart') }}">Submit Cart</button>
   </div>
 </form>
 
