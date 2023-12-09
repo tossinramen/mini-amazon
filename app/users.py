@@ -13,7 +13,7 @@ from markupsafe import Markup
 
 from flask import Blueprint
 bp = Blueprint('users', __name__)
-
+PER_PAGE = 10
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -240,6 +240,16 @@ def withdraw():
 #public profile, make diffeerent for seller. seller needs rating info about them.
 @bp.route('/user/<int:user_id>', methods=['GET'])
 def public_user_profile(user_id):
+    page = request.args.get('page', 1, type=int)
+    seller_page = request.args.get('seller_page', 1, type=int)
+    offset = (page - 1) * PER_PAGE
+    seller_offset = (seller_page - 1) * PER_PAGE
+    total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM Product_Rating WHERE uid = :uid', uid=user_id)
+    # Assuming the first element of the tuple is the 'total_count'.
+    total = total_result[0][0] if total_result else 0
+    seller_total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM Seller_Rating WHERE sid = :sid', sid=user_id)
+    # Assuming the first element of the tuple is the 'total_count'.
+    seller_total = seller_total_result[0][0] if seller_total_result else 0
     user_query = 'SELECT id, firstname, lastname, email FROM Users WHERE id = :user_id'
     user_info_result = app.db.execute(user_query, user_id=user_id)
     user_info = user_info_result[0] if user_info_result else None
@@ -253,8 +263,9 @@ def public_user_profile(user_id):
     JOIN Users u ON s.uid = u.id
     WHERE r.uid = :user_id
     ORDER BY r.time_reviewed DESC
+    LIMIT :limit OFFSET :offset
     '''
-    user_reviews = app.db.execute(reviews_query, user_id=user_id)
+    user_reviews = app.db.execute(reviews_query, user_id=user_id, limit = PER_PAGE, offset = offset)
 
     is_seller_query = 'SELECT COUNT(*) FROM Sellers WHERE uid = :user_id'
     is_seller_result = app.db.execute(is_seller_query, user_id=user_id)
@@ -308,11 +319,12 @@ def public_user_profile(user_id):
         FROM Seller_Rating sr
         JOIN Users u ON sr.uid = u.id
         WHERE sr.sid = :user_id
-        ORDER BY sr.time_reviewed DESC  
+        ORDER BY sr.time_reviewed DESC 
+        LIMIT :limit OFFSET :offset         
         '''
-        seller_reviews = app.db.execute(seller_reviews_query, user_id=user_id)
+        seller_reviews = app.db.execute(seller_reviews_query, user_id=user_id, limit = PER_PAGE, offset = seller_offset)
 
-    return render_template('public_user_profile.html', user_info=user_info, user_reviews=user_reviews, seller_info=seller_info, seller_reviews=seller_reviews, allowed=allowed, reviewed_allowed=reviewed_allowed, sid=user_id, current_user_rating_info=current_user_rating_info)
+    return render_template('public_user_profile.html', user_info=user_info, user_reviews=user_reviews, seller_info=seller_info, seller_reviews=seller_reviews, allowed=allowed, reviewed_allowed=reviewed_allowed, sid=user_id, current_user_rating_info=current_user_rating_info, total=total, page=page, seller_page=seller_page, per_page=PER_PAGE, seller_total=seller_total)
 #need for profile link
 @bp.context_processor
 def context_processor():

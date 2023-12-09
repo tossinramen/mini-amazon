@@ -78,6 +78,27 @@ def update_data():
         # Otherwise, redirect to 'products.detailed_products'
         return redirect(url_for('products.product_details', pid=pid))
 
+@bp.route('/redirect_to_delete_review', methods=['GET', 'POST'])
+def redirect_to_delete_review():
+    pid = request.args.get('pid')
+    referring_page = request.referrer
+    return redirect(url_for('product_rating.delete_review', pid=pid, referring_page=referring_page))
+
+@bp.route('/delete_pr/<int:pid>', methods=['GET', 'POST'])
+def delete_review(pid):
+    #Get values for update
+    uid = current_user.id
+    #Query for updating table
+    referring_page = request.args.get('referring_page')
+    delete_query = ('''DELETE FROM Product_Rating WHERE pid = :pid and uid = :uid''') 
+    app.db.execute(delete_query, pid = pid, uid = uid)
+    if 'product_rating' in referring_page:
+        # If the referring page contains 'product_rating', redirect to 'product_rating.product_rating'
+        return redirect(url_for('product_rating.product_rating'))
+    else:
+        # Otherwise, redirect to 'products.detailed_products'
+        return redirect(url_for('products.product_details', pid=pid))
+
 
 @bp.route('/redirect_to_add_review', methods=['GET', 'POST'])
 def redirect_to_add_review():

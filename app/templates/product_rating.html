@@ -32,7 +32,8 @@
             <td>{{ rating.downvotes }}</td>
             <td>{{ rating.time_reviewed }}</td>
             <td>
-              <a href="{{ url_for('product_rating.redirect_to_edit_review', pid=rating.pid) }}" class="btn btn-light">Edit Review</a>
+              <a href="{{ url_for('product_rating.redirect_to_edit_review', pid=rating.pid) }}" class="btn btn-light">Edit</a>
+              <a href="{{ url_for('product_rating.redirect_to_delete_review', pid=rating.pid) }}" class="btn btn-light">Delete</a>
             </td>
           </tr>
         {% endfor %}
