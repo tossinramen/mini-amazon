@@ -161,3 +161,24 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+.wishlist-btn {
+  border: none;
+  background-color: #28a745;
+  cursor: pointer;
+  padding: 10px 8px; 
+  border-radius: 0.25rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.wishlist-btn:hover {
+  background-color: #34ce57;
+  box-shadow: 0 0 10px #34ce57;
+}
+
+.wishlist-btn::before {
+  content: '\2713'; 
+  color: white;
+  font-weight: bold;
+}

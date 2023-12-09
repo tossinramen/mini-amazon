@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request, current_app as app
+from flask import render_template, redirect, url_for, flash, abort, request, current_app as app
 from flask_login import current_user
 import datetime
 import csv
@@ -40,19 +40,31 @@ def update_all_quantities():
     print(request.form)
     for key in request.form:
         if key.startswith('quantity_'):
-            # identifiers extracted
             _, id, pid, sid = key.split('_')
-            # line_item = LineItem.get_by_id(id)
-            # id, sid, pid = line_item[0], line_item[1]
-            new_quantity = request.form[key]
-            
-            app.db.execute('''
-                UPDATE CartLineItems
-                SET qty = :new_quantity
-                WHERE id = :id
+            new_quantity = int(request.form[key])  # Convert to integer
+
+            max_quantity_result = app.db.execute('''
+                SELECT quantity
+                FROM Seller_Inventory
+                WHERE uid = :sid
                 AND pid = :pid
-                AND sid = :sid
-                ''', new_quantity=new_quantity, id=id, pid=pid, sid=sid, uid=current_user.id)
+                ''', sid=sid, pid=pid)
+
+            if max_quantity_result:
+                max_quantity = max_quantity_result[0][0]  # Extract the integer value
+                if new_quantity <= max_quantity:
+                    app.db.execute('''
+                        UPDATE CartLineItems
+                        SET qty = :new_quantity
+                        WHERE id = :id
+                        AND pid = :pid
+                        AND sid = :sid
+                        ''', new_quantity=new_quantity, id=id, pid=pid, sid=sid, uid=current_user.id)
+                else:
+                    abort(400, "Insufficient inventory for one or more items. Quantities not updated.")
+            else:
+                abort(400, "Item not found in seller inventory.")
+                
     return redirect(url_for('carts.cart', uid=current_user.id))
 # remove an item from cart
 @bp.route('/remove_item/<int:id>/<int:pid>/<int:sid>', methods=['GET', 'POST'])
@@ -189,20 +201,113 @@ def submit_cart():
     user_id = current_user.id
     # fetch cart items
     cart_items = Cart.get_items_by_uid(user_id)
+    '''
+    # check inventory for each item and store updates
+    inventory_updates = []
+
+    for item in cart_items:
+        # fetch current inventory for the item
+        inventory_query = 'SELECT quantity FROM Seller_Inventory WHERE pid = :pid AND uid = :uid'
+        current_inventory = app.db.execute(inventory_query, pid=item.pid, uid=item.sid)
+        
+        if current_inventory and current_inventory[0][0] >= item.qty:
+            # prep inventory update if sufficient qty available
+            new_quantity = current_inventory[0][0] - item.qty
+            inventory_updates.append((new_quantity, item.pid, item.sid))
+        else:
+            # inventory insufficient, raise an error, stop the process
+            abort(400, "Insufficient inventory for one or more items. Order not submitted.")
     
+    # process the order if all items have sufficient inventory
+    for update in inventory_updates:
+        new_quantity, pid, sid = update
+        update_inventory_query = 'UPDATE Seller_Inventory SET quantity = :new_quantity WHERE pid = :pid AND uid = :sid'
+        app.db.execute(update_inventory_query, new_quantity=new_quantity, pid=pid, sid=sid)
+    '''
     id = Cart.get_id_by_uid(user_id)
     Purchase.create(id, user_id)
 
     purchase_id = id
 
     for item in cart_items:
+        # add items to BoughtLineItems
         app.db.execute('''
             INSERT INTO BoughtLineItems(id, sid, pid, qty, price)
             VALUES(:purchase_id, :sid, :pid, :qty, :price)
         ''', purchase_id=purchase_id, sid=item.sid, pid=item.pid, qty=item.qty, price=item.price)
 
     # clear cart items
-    
     Cart.clear_cart(user_id)
 
     return redirect(url_for('users.user_purchases', uid=user_id))
+
+@bp.route('/product_details/<int:pid>', methods=['GET', 'POST'])
+def product_details(pid):
+    # product info from products table
+    product_query = '''
+    SELECT id, name, price, description, available, category, image_url, \
+    (SELECT AVG(stars) FROM product_rating WHERE pid = :pid GROUP BY pid) AS avg_stars
+    FROM products
+    WHERE id = :pid
+    '''
+    product_result = app.db.execute(product_query, pid=pid)
+
+    if product_result:
+        name = product_result[0][1]
+        price = product_result[0][2]
+        description = product_result[0][3]
+        available = product_result[0][4]
+        category = product_result[0][5]
+        image_url = product_result[0][6]
+        avg_stars = product_result[0][7]
+    
+    # list each seller and their current quantities
+    seller_query = f'''
+    SELECT uid, quantity,
+           CONCAT(users.firstname, ' ', users.lastname) AS name
+    FROM seller_inventory
+    JOIN users ON users.id = seller_inventory.uid
+    WHERE pid = {pid}
+    '''
+
+    seller_info = app.db.execute(seller_query)
+
+    return render_template('detailed_product.html', name=name,
+                           price=price,
+                           description=description,
+                           available=available,
+                           category=category,
+                           image_url=image_url,
+                           avg_stars=avg_stars,
+                           seller_info=seller_info)
+
+@bp.route('/add_to_wishlist/<int:id>', methods=['POST'])
+def add_to_wishlist(id):
+    # check if the item is already in the wishlist
+    existing_wishlist_item = app.db.execute(
+        "SELECT * FROM Wishlist WHERE user_id = :user_id AND product_id = :pid",
+        user_id=current_user.id, pid=pid
+    )
+
+    if existing_wishlist_item:
+        flash("Item is already in the wishlist", "error")
+    else:
+        # add the item to the wishlist
+        app.db.execute(
+            "INSERT INTO Wishlist (user_id, product_id) VALUES (:user_id, :pid)",
+            user_id=current_user.id, pid=pid
+        )
+        flash("Item added to wishlist", "success")
+
+    return redirect(url_for('carts.cart', uid=current_user.id))
+
+
+@bp.route('/view_wishlist/<int:uid>')
+def view_wishlist(uid):
+    # Retrieve wishlist items for the user
+    wishlist_items = app.db.execute(
+        "SELECT * FROM Wishlist INNER JOIN Products ON Wishlist.product_id = Products.id WHERE user_id = :uid",
+        uid=uid
+    )
+
+    return render_template('wishlist.html', wishlist_items=wishlist_items, uid=uid)

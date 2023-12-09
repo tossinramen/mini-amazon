@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br><br>
+<body>
+  <a href="{{ url_for('index.index', uid=uid) }}" type="button" class="btn btn-light">Home</a>
+  <a href="{{ url_for('carts.cart', uid=uid) }}" type="button" class="btn btn-light">Back to Cart</a>
+</body>
+<br><br>
+
+<h2>Wishlist Items:</h2>
+
+<table class='table table-hover table-bordered container'>
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Product Name</th>
+      <th scope="col">Price</th>
+      <th scope="col">Seller</th>
+      <th scope="col">Add to Cart</th>
+      <th scope="col">Remove</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in wishlist_items %}
+      <tr>
+        <td onclick="redirectToProductDetails({{ item.pid }});">{{ item.product_name }}</td>
+        <td>{{ item.seller_name }}</td>
+        <td>${{ '%0.2f' % item.price }}</td>
+        <td>
+          <form method="POST" action="{{ url_for('wishlist.add_to_cart', id=item.id, pid=item.pid, sid=item.sid) }}">
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-cart-plus"></i> Add to Cart
+            </button>
+          </form>
+        </td>
+        <td>
+          <form method="POST" action="{{ url_for('wishlist.remove_item', id=item.id, pid=item.pid, sid=item.sid) }}">
+            <button type="submit" class="btn remove-btn">
+              <span class="remove-icon">&times;</span>
+            </button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
