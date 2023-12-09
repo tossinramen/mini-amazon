@@ -18,7 +18,8 @@ def inventory(uid):
     offset = (page - 1) * per_page
     seller_inventory = SellerInventory.get_all_by_uid_with_pagination(uid, per_page, offset)
     total_items = SellerInventory.count_all_by_uid(uid)  
-    total_pages = (total_items + per_page - 1) // per_page  
+    total_pages = (total_items + per_page - 1) // per_page
+    
     return render_template('seller_page.html', inventory=seller_inventory,
                            page=page, per_page=per_page, total=total_items,
                            total_pages=total_pages, uid=uid)
@@ -28,22 +29,38 @@ def past_seller_orders(uid):
     PER_PAGE = 10 
     page = request.args.get('page', 1, type=int)
     offset = (page - 1) * PER_PAGE
-    total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM BoughtLineItems WHERE sid = :uid', uid=uid)
+    total_result = app.db.execute('''SELECT COUNT(*) AS total_count FROM (SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled
+        FROM BoughtLineItems, Users, Purchases, Products
+        WHERE sid = :uid
+        AND Purchases.id = BoughtLineItems.id
+        AND Users.id = Purchases.uid
+        AND Products.id = BoughtLineItems.pid
+        ORDER BY time_purchased desc) as B''', uid=uid)
     # Assuming the first element of the tuple is the 'total_count'.
     total = total_result[0][0] if total_result else 0
 
     query = """
-        SELECT id, sid, pid, qty, price, fulfilled
-        FROM BoughtLineItems
+        SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled
+        FROM BoughtLineItems, Users, Purchases, Products
         WHERE sid = :uid
-        ORDER BY id
+        AND Purchases.id = BoughtLineItems.id
+        AND Users.id = Purchases.uid
+        AND Products.id = BoughtLineItems.pid
+        ORDER BY time_purchased desc
         LIMIT :limit OFFSET :offset
     """
     
     seller_orders = app.db.execute(query, uid=uid, limit=PER_PAGE, offset=offset)  
     
-    return render_template('seller_orders.html', inventory=seller_orders, total=total,
-                           page=page, per_page=PER_PAGE, uid=uid)
+    return render_template('seller_orders.html', 
+                           inventory=seller_orders, 
+                           total=total,
+                           page=page, 
+                           per_page=PER_PAGE, 
+                           uid=uid, 
+                           search_type="order_id", 
+                           sort_type="order_date",
+                           sort_order="desc")
 
 
 def get_search_keywords():
@@ -68,68 +85,118 @@ def redirect_to_filtered_orders():
 
 @bp.route('/filtered_orders/<int:uid>', methods=['GET', 'POST'])
 def filtered_orders(uid):
-    PER_PAGE = 10 
+    PER_PAGE = 10
     page = request.args.get('page', 1, type=int)
-    sort_type = request.args.get('sort_type', type=str)  
-    sort_order = request.args.get('sort_order', type=str)
-    search_type = request.args.get('search_type', type=str)
+    sort_type = request.args.get('sort_type', default='order_date', type=str)
+    sort_order = request.args.get('sort_order', default='desc', type=str)
+    search_type = request.args.get('search_type', default='order_id', type=str)
     search_order = request.args.get('search_order', type=str)
     offset = (page - 1) * PER_PAGE
 
-    print(f"Sort Order: {sort_order}")
+
+    if search_type == "order_date":
+        search_type = "time_purchased"
+    elif search_type == "buyer_info":
+        search_type = "address"
+    elif search_type == "fulfilled_status":
+        search_type = "fulfilled"
+    elif search_type == "quantity":
+        search_type = "qty"
+    elif search_type == "order_id":
+        search_type = "id"
+    elif search_type == "product_id":
+        search_type = "pid"
+    elif search_type == "product_name":
+        search_type = "name"
+
+    if sort_type == "order_date":
+        sort_type = "time_purchased"
+    elif sort_type == "buyer_info":
+        sort_type = "address"
+    elif sort_type == "fulfilled_status":
+        sort_type = "fulfilled"
+    elif sort_type == "quantity":
+        sort_type = "qty"
+    elif sort_type == "order_id":
+        sort_type = "id"
+    elif sort_type == "product_id":
+        sort_type = "pid"
+    elif sort_type == "product_name":
+        sort_type = "name"
 
     # Assuming you have a total count query
-    total_query = """
-        SELECT COUNT(*) AS total_count
-        FROM BoughtLineItems
+    total_query = '''SELECT COUNT(*) AS total_count FROM (SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled
+        FROM BoughtLineItems, Users, Purchases, Products
         WHERE sid = :uid
-    """
+        AND Purchases.id = BoughtLineItems.id
+        AND Products.id = BoughtLineItems.pid
+        AND Users.id = Purchases.uid
+        '''
 
     # Modify the query based on search conditions
-    if search_type == 'order_id' and search_order != "":
-        total_query += f" AND id = :search_order"
-    elif search_type == 'product_id' and search_order != "":
-        total_query += f" AND pid = :search_order"
+    if search_type =='id' and search_order:
+        total_query += " AND BoughtLineItems.id = :search_order"
+    elif search_type =='pid' and search_order:
+        total_query += " AND BoughtLineItems.pid = :search_order"
+    elif search_type == "time_purchased" and search_order:
+        total_query += " AND time_purchased = :search_order"
+    elif search_type == "address" and search_order:
+        total_query += " AND address ~* :search_order"
+    elif search_type == "fulfilled" and search_order:
+        total_query += " AND fulfilled = :search_order"
+    elif search_type == "qty" and search_order:
+        total_query += " AND qty = :search_order"
+    elif search_type == "name" and search_order:
+        total_query += " AND name ~* :search_order"
+
+    total_query += ") as B"
+
 
     # Execute the modified total count query
     total_result = app.db.execute(total_query, uid=uid, search_order=search_order)
     total = total_result[0][0] if total_result else 0
 
-
     # Build the base query
     query = """
-        SELECT id, sid, pid, qty, price, fulfilled
-        FROM BoughtLineItems
+        SELECT BoughtLineItems.id, sid, pid, qty, name, BoughtLineItems.price, time_purchased, Users.address, fulfilled
+        FROM BoughtLineItems, Users, Purchases, Products
         WHERE sid = :uid
+        AND Purchases.id = BoughtLineItems.id
+        AND Products.id = BoughtLineItems.pid
+        AND Users.id = Purchases.uid
     """
 
     # Add search conditions
-    if search_type == 'order_id' and search_order != "":
-        query += f" AND id = :search_order"
-        search_type = "id"
-    elif search_type == 'product_id' and search_order != "":
-        query += f" AND pid = :search_order"
-        search_type = "pid"
-    elif search_type == 'order_id':
-        search_type = "id"
-    else:
-        search_type = "pid"
+    if search_type =='id' and search_order:
+        query += " AND BoughtLineItems.id = :search_order"
+    elif search_type =='pid' and search_order:
+        query += " AND BoughtLineItems.pid = :search_order"
+    elif search_type == "time_purchased" and search_order:
+        query += " AND time_purchased = :search_order"
+    elif search_type == "address" and search_order:
+        query += " AND address ~* :search_order"
+    elif search_type == "fulfilled" and search_order:
+        query += " AND fulfilled = :search_order"
+    elif search_type == "qty" and search_order:
+        query += " AND qty = :search_order"
+    elif search_type == "name" and search_order:
+        query += " AND name ~* :search_order"
 
     # Add ORDER BY clause
     if sort_type and sort_type != 'None':
-        if sort_type == 'order_id':
-            query += f" ORDER BY id {sort_order}"
-        elif sort_type == 'product_id':
-            query += f" ORDER BY pid {sort_order}"
-        else:
-            # Default sorting if no specific order is provided
-            query += f" ORDER BY {search_type} ASC"
-    
+        query += f" ORDER BY {sort_type} {sort_order}"
+
     # Add LIMIT and OFFSET
-    query += f" LIMIT :limit OFFSET :offset"
+    query += " LIMIT :limit OFFSET :offset"
 
     # Execute the query
-    seller_orders = app.db.execute(query, uid=uid, search_order=search_order, limit=PER_PAGE, offset=offset)
+    seller_orders = app.db.execute(
+        query,
+        uid=uid,
+        search_order=search_order,
+        limit=PER_PAGE,
+        offset=offset
+    )
 
     return render_template(
         'seller_orders.html',
@@ -140,8 +207,9 @@ def filtered_orders(uid):
         uid=uid,
         search_type=search_type,
         search_order=search_order,
-        sort_order=sort_order,
+        sort_order=sort_order
     )
+
 
 
 

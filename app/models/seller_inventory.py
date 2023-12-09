@@ -30,13 +30,14 @@ WHERE pid = :pid
     @staticmethod
     def get_all_by_uid_with_pagination(uid, limit, offset):
         rows = app.db.execute('''
-SELECT uid, pid, quantity
-FROM Seller_Inventory
-WHERE uid = :uid
-LIMIT :limit OFFSET :offset
+SELECT uid, pid, quantity, name, price
+        FROM Seller_Inventory, Products
+        WHERE uid = :uid
+        AND Seller_Inventory.pid = Products.id
+        LIMIT :limit OFFSET :offset
 ''',
                               uid=uid, limit=limit, offset=offset)
-        return [SellerInventory(*row) for row in rows]
+        return rows
 
     @staticmethod
     def count_all_by_uid(uid):

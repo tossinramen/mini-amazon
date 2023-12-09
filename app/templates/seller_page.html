@@ -15,7 +15,9 @@
   <table class='table table-hover table-bordered container'>
     <thead class="thead-dark">
       <tr>
+        <th scope="col">Product Name</th>
         <th scope="col">Product ID</th>
+        <th scope="col">Price</th>
         <th scope="col">Quantity</th>
         <th scope="col" style="width: 100px;"></th>
       </tr>
@@ -23,7 +25,9 @@
     <tbody>
       {% for item in inventory %}
         <tr>
+          <td>{{ item.name }}</td>
           <td>{{ item.pid }}</td>
+          <td>{{ item.price }}</td>
           <td>{{ item.quantity }}</td>
           <td><a href="{{ url_for('seller_inventory.redirect_to_edit_quantity', pid=item.pid) }}"  type="button" class="btn btn-light">Edit Quantity</a></td>
         </tr>
