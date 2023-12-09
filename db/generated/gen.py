@@ -166,6 +166,7 @@ def gen_sellers(user_ids, probability):
 
 
 def gen_seller_inventory(seller_uids, product_uids, max_quantity_per_product):
+    inventory_items = []
     with open('Seller_Inventory.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('Seller Inventory...', end=' ', flush=True)
@@ -176,10 +177,11 @@ def gen_seller_inventory(seller_uids, product_uids, max_quantity_per_product):
             for seller_uid in selected_sellers:
                 quantity = fake.random_int(min=1, max=max_quantity_per_product)
                 writer.writerow([seller_uid, product_uid, quantity])
+                inventory_items.append((seller_uid, product_uid, quantity))
 
         print(f'{len(seller_uids)} seller inventory records generated')
 
-    return
+    return inventory_items
 
 from datetime import datetime, timedelta
 
@@ -252,8 +254,7 @@ def gen_bought_line_items(available_purchases, seller_ids, product_ids):
         print(f'{total_line_items} line items generated')
 
 
-def gen_cart_line_items(available_carts, seller_ids, product_ids, mode):
-
+def gen_cart_line_items(inventory_items, available_carts, seller_ids, product_ids, mode):
     with open('CartLineItems.csv', mode) as f:
         writer = get_csv_writer(f)
         print('CartLineItems...', end=' ', flush=True)
@@ -265,19 +266,29 @@ def gen_cart_line_items(available_carts, seller_ids, product_ids, mode):
             num_line_items = fake.random_int(1, 10)
             for _ in range(num_line_items):
                 while True:
-                    sid = random.choice(seller_ids)
-                    pid = random.choice(product_ids)
-                    combination = (cart_id, sid, pid)
+                    # Select a random inventory item
+                    inventory_item = random.choice(inventory_items)
+                    seller_uid, product_uid, available_quantity = inventory_item
 
+                    # Check if the selected seller-product pair is not already used
+                    combination = (cart_id, seller_uid, product_uid)
                     if combination not in generated_combinations:
                         generated_combinations.add(combination)
-                        qty = fake.random_int(min=1, max=10)
+
+                        # Choose a quantity not exceeding the available quantity in the inventory
+                        qty = fake.random_int(min=1, max=min(10, available_quantity))
+
+                        # Generate a random price
                         price = '{:.2f}'.format(fake.pydecimal(min_value=10, max_value=100, right_digits=2))
-                        writer.writerow([cart_id, sid, pid, qty, price])
+
+                        # Write to CSV
+                        writer.writerow([cart_id, seller_uid, product_uid, qty, price])
                         total_line_items += 1
                         break
+
         print(f'{total_line_items} line items generated')
     return
+
 
 def gen_carts(user_ids, last_purchase_id):
     with open('Carts.csv', 'w') as f:
@@ -360,10 +371,10 @@ available_users = gen_users(num_users)
 available_pids = gen_products(num_products)
 # gen_purchases(num_purchases, available_pids)
 available_seller_ids = gen_sellers(available_users, 0.3) 
-gen_seller_inventory(available_seller_ids, available_pids, 1000) 
+inventory_items = gen_seller_inventory(available_seller_ids, available_pids, 1000) 
 available_purchase_ids = gen_purchases(available_users, 1000)
 gen_bought_line_items(available_purchase_ids, available_seller_ids, available_pids)
 available_cids = gen_carts(available_users, 1000)
-gen_cart_line_items(available_cids, available_seller_ids, available_pids, "w")
+gen_cart_line_items(inventory_items, available_cids, available_seller_ids, available_pids, "w")
 gen_product_ratings(num_product_ratings, available_pids)
 gen_seller_ratings(num_seller_ratings, available_pids)
