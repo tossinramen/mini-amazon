@@ -21,12 +21,15 @@
             <option value="product_name" {% if search_type=='product_name' %}selected{% endif %}>Product Name</option>
             <option value="quantity" {% if search_type=='quantity' %}selected{% endif %}>Quantity</option>
             <option value="order_date" {% if search_type=='order_date' %}selected{% endif %}>Order Date</option>
-            <option value="buyer_info" {% if search_type=='buyer_info' %}selected{% endif %}>Buyer Information</option>
-            <option value="fulfilled_status" {% if search_type=='fulfilled_status' %}selected{% endif %}>Fulfillment Status</option>
+            <option value="buyer_name" {% if search_type=='buyer_name' %}selected{% endif %}>Buyer Name</option>
+            <option value="buyer_address" {% if search_type=='buyer_address' %}selected{% endif %}>Delivery Address
+            </option>
+            <option value="fulfilled_status" {% if search_type=='fulfilled_status' %}selected{% endif %}>Fulfillment
+              Status</option>
           </select>
         </div>
         <div class="form-group">
-          <label for="searchOrder">Search ID:</label>
+          <label for="searchOrder">Search:</label>
           <div class="d-flex">
             <input type="text" class="form-control" name="search_order" id="searchOrder" value="{{ search_order }}"
               style="width: 300px;">
@@ -49,8 +52,11 @@
             <option value="product_name" {% if sort_type=='product_name' %}selected{% endif %}>Product ID</option>
             <option value="quantity" {% if sort_type=='quantity' %}selected{% endif %}>Quantity</option>
             <option value="order_date" {% if sort_type=='order_date' %}selected{% endif %}>Order Date</option>
-            <option value="buyer_info" {% if sort_type=='buyer_info' %}selected{% endif %}>Buyer Information</option>
-            <option value="fulfilled_status" {% if sort_type=='fulfilled_status' %}selected{% endif %}>Fulfillment Status</option>
+            <option value="buyer_name" {% if sort_type=='buyer_name' %}selected{% endif %}>Buyer Name</option>
+            <option value="buyer_address" {% if search_type=='buyer_address' %}selected{% endif %}>Delivery Address
+            </option>
+            <option value="fulfilled_status" {% if sort_type=='fulfilled_status' %}selected{% endif %}>Fulfillment
+              Status</option>
           </select>
         </div>
 
@@ -115,7 +121,7 @@
     // Store selected search type in sessionStorage
     sessionStorage.setItem('searchType', searchType);
 
-    const url = `{{ url_for('seller_inventory.filtered_orders', uid=uid) }}?page=${page}&sort_order=${sortOrder}&sort_type=${sortType}&search_type=${searchType}&search_order=${searchOrder}`;
+    const url = `{{ url_for('seller_inventory.seller_orders', uid=uid) }}?page=${page}&sort_order=${sortOrder}&sort_type=${sortType}&search_type=${searchType}&search_order=${searchOrder}`;
     window.location.href = url;
   }
 
@@ -153,7 +159,8 @@
       <th scope="col">Quantity</th>
       <th scope="col">Price</th>
       <th scope="col">Order Date</th>
-      <th scope="col">Buyer Information</th>
+      <th scope="col">Buyer Name</th>
+      <th scope="col">Delivery Address</th>
       <th scope="col">Fulfilled</th>
       <th scope="col">Action</th> <!-- New column for the action button -->
     </tr>
@@ -162,12 +169,22 @@
     {% for order in inventory %}
     <tr>
       <td>{{ order.id }}</td>
-      <td>{{ order.pid }}</td>
-      <td>{{ order.name }}</td>
+      <!-- Link Product ID to a separate page -->
+      <td><a href="{{ url_for('products.product_details', pid=order.pid) }}">{{ order.pid }}</a></td>
+
+      <!-- Link Product Name to a separate page -->
+      <td><a href="{{ url_for('products.product_details', pid=order.pid) }}">{{ order.p_name }}</a></td>
+
       <td>{{ order.qty }}</td>
       <td>{{ order.price }}</td>
       <td>{{ order.time_purchased }}</td>
-      <td>{{ order.address }}</td>
+
+      <!-- Split buyer information into two columns -->
+      <!-- <td>{{ order.name }}</td>
+      <td>{{ order.address }}</td> -->
+      <td><a href="{{ url_for('users.public_user_profile', user_id=order.uid) }}">{{ order.name }}</a></td>
+      <td><a href="{{ url_for('users.public_user_profile', user_id=order.uid) }}">{{ order.address }}</a></td>
+
       <td>{{ order.time_fulfilled if order.fulfilled else "In Transit" }}</td>
       <td>
         <!-- Add a button to toggle fulfillment status -->
@@ -216,7 +233,7 @@
     const sortOrder = document.getElementById("sortOrder").value;
     const sortType = document.getElementById("sortType").value;  // Add this line
 
-    const url = `{{ url_for('seller_inventory.filtered_orders', uid=uid) }}?page=${page}&sort_order=${sortOrder}&sort_type=${sortType}&search_type=${searchType}&search_order=${searchOrder}`;
+    const url = `{{ url_for('seller_inventory.seller_orders', uid=uid) }}?page=${page}&sort_order=${sortOrder}&sort_type=${sortType}&search_type=${searchType}&search_order=${searchOrder}`;
     window.location.href = url;
   }
 
