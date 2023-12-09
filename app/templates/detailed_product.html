@@ -47,17 +47,15 @@
         </tbody>
         </table>
   </div>
-  <h2>Reviews:</h2>
   {% if allowed == 1 %}
     {% if reviewed_allowed == 1 %}
     <div class="add-review-button">
-      
         <a href="{{ url_for('product_rating.redirect_to_add_review', pid=pid) }}" class="btn btn-primary">Add Review</a>
         <br><br>
       </div>
     {% else %}
-      <p class="message">You can only add one review per product.</p>
       <h2>My Review:</h2>
+      <p class="message">You can only add one review per product.</p>
       <table class='table table-hover table-bordered container'>
         <thead class="thead-dark">
           <tr>
@@ -92,6 +90,7 @@
   {% else %}
     <p class="message">You can only add a review if you have bought the product.</p>
   {% endif %}
+<h2>Other Reviews:</h2> 
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>

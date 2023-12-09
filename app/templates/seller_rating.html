@@ -19,6 +19,7 @@
       <th scope="col">Upvotes</th>
       <th scope="col">Downvotes</th>
       <th scope="col">Time Reviewed</th>
+      <th scope="col">Actions</th>
     </tr>
   </thead>
   
@@ -33,7 +34,10 @@
         <td>{{rating.upvotes}}</td>
         <td>{{rating.downvotes}}</td>
         <td>{{rating.time_reviewed}}</td>
-        <td><a href="{{ url_for('seller_rating.redirect_to_edit_review_sellers', sid=rating.sid) }}"  type="button" class="btn btn-light">Edit Review</a></td>
+        <td>
+          <a href="{{ url_for('seller_rating.redirect_to_edit_review_sellers', sid=rating.sid) }}"  type="button" class="btn btn-light">Edit</a>
+          <a href="{{ url_for('seller_rating.redirect_to_delete_review_sellers', sid=rating.sid) }}"  type="button" class="btn btn-light">Delete</a>
+        </td>
       </tr>
     {% endfor %}
   </tbody>

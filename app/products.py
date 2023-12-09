@@ -147,13 +147,18 @@ def product_details(pid):
 
     seller_info = app.db.execute(seller_query)
 
+    if current_user.is_authenticated:
+        uid = current_user.id
+    else:
+        uid = -1
+
     # list each review for the product
     rating_query = f'''
     SELECT pr.uid as uid, pr.pid as pid, u.firstname as firstname, u.lastname as lastname, p.name as product_name, pr.description, pr.upvotes, pr.downvotes, pr.stars, pr.time_reviewed
             FROM Product_Rating pr
             JOIN Products p ON p.id = pr.pid
             JOIN Users u ON u.id = pr.uid
-            WHERE pid = {pid} AND NOT pr.uid = {current_user.id}
+            WHERE pid = {pid} AND NOT pr.uid = {uid}
             ORDER BY time_reviewed DESC
             LIMIT :limit OFFSET :offset
     '''
@@ -166,11 +171,11 @@ def product_details(pid):
     check_bought_query = f''' SELECT COUNT(*)
             FROM BoughtLineItems b
             JOIN Purchases p ON p.id = b.id
-            WHERE pid = {pid} AND p.uid = {current_user.id}
+            WHERE pid = {pid} AND p.uid = {uid}
     '''
     check_reviewed_query = f''' SELECT COUNT(*)
             FROM Product_Rating pr
-            WHERE pid = {pid} AND uid = {current_user.id}
+            WHERE pid = {pid} AND uid = {uid}
     '''
     check = app.db.execute(check_bought_query)
     if int(check[0][0]) > 0:
@@ -187,7 +192,7 @@ def product_details(pid):
             FROM Product_Rating pr
             JOIN Products p ON p.id = pr.pid
             JOIN Users u ON u.id = pr.uid
-            WHERE pid = {pid} AND pr.uid = {current_user.id}
+            WHERE pid = {pid} AND pr.uid = {uid}
             ORDER BY time_reviewed DESC
     '''
     user_rating_info = app.db.execute(user_rating_query)    

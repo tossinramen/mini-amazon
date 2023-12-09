@@ -45,8 +45,21 @@
         <label for="description">Description:</label>
         <input type="text" name="description"><br>
 
-        <label for="stars">Stars:</label>
-        <input type="text" name="stars"><br>
+        <div class="form-group">
+          <label for="stars">Stars</label>
+          <div class="star-rating">
+            <input type="radio" id="star1" name="stars" value="1" required>
+            <label for="star1"></label>
+            <input type="radio" id="star2" name="stars" value="2" required>
+            <label for="star2"></label>
+            <input type="radio" id="star3" name="stars" value="3" required>
+            <label for="star3"></label>
+            <input type="radio" id="star4" name="stars" value="4" required>
+            <label for="star4"></label>
+            <input type="radio" id="star5" name="stars" value="5" required>
+            <label for="star5"></label>
+          </div>
+        </div>
         
         <input type="hidden" name="pid" value="{{rating.pid}}">
         <input type="hidden" name="referring_page" value="{{referring_page}}">

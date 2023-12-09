@@ -45,7 +45,6 @@ def product_rating():
 def redirect_to_edit_review():
     pid = request.args.get('pid')
     referring_page = request.referrer
-    print(referring_page)
     return redirect(url_for('product_rating.edit_review', pid=pid, referring_page=referring_page))
 
 #Get the current rating to view before updating
@@ -54,7 +53,6 @@ def edit_review(pid):
     uid = current_user.id
     referring_page = request.args.get('referring_page')
     ratings = Product_Rating.get(uid, pid)
-    print(referring_page)
     return render_template('edit_review.html',
                            ratings=ratings, referring_page=referring_page) 
 
@@ -69,7 +67,6 @@ def update_data():
     referring_page = request.form.get('referring_page')
     #Query for updating table
     update_query = ('''UPDATE Product_Rating SET description = :description, stars = :stars WHERE pid = :pid and uid = :uid''') 
-    print(referring_page)
     app.db.execute(update_query, description = description, stars = stars, pid = pid, uid = uid)
     if 'product_rating' in referring_page:
         # If the referring page contains 'product_rating', redirect to 'product_rating.product_rating'
