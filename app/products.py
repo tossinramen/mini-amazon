@@ -133,11 +133,10 @@ def product_details(pid):
 
     # list each seller and their current quantities
     seller_query = '''
-    SELECT uid, quantity,
+    SELECT si.uid, si.quantity,
            CONCAT(users.firstname, ' ', users.lastname) AS name
-    FROM seller_inventory
-    JOIN users ON users.id = seller_inventory.uid
-    WHERE pid = :pid
+    FROM seller_inventory AS si, users
+    WHERE pid = :pid AND users.id = si.uid
     '''
 
     seller_info = app.db.execute(seller_query, pid=pid)
@@ -165,13 +164,18 @@ def add_to_cart(pid):
     quantity = request.form.get('quantity')
 
     if not seller_id and not quantity:
-        abort(400, "Seller ID and quantity are required.")
+        abort(400, "Seller and quantity are required.")
 
     if not seller_id:
-        abort(400, "Seller ID is required.")
+        abort(400, "Seller is required.")
 
     if not quantity:
         abort(400, "Quantity is required.")
+
+    seller_quantity = get_seller_quantity(uid, pid)
+
+    if quantity > seller_quantity:
+        abort(400, "Seller does not have the requested quantity.")
 
     cart_id = get_cart_id(uid)
     
@@ -189,42 +193,22 @@ def add_to_cart(pid):
     return render_template('carts.html', uid=uid)
     # return redirect(url_for('products.product_details', pid=pid, success_message="Added to cart successfully.", success=1))
 
-
-
-# def change_seller_inventory(pid, seller_id, quantity):
-#     seller_quantity_query = f'''
-#     SELECT quantity
-#     FROM seller_inventory
-#     WHERE uid = {seller_id} AND pid = {pid}
-#     '''
-#     result = db.app.execute(seller_quantity_query)
-#     if result.rowcount == 0:
-#         raise ValueError("Seller does not sell this product.")
-#     seller_quantity = result[0][0]
-#     if seller_quantity >= quantity:
-#         seller_query = f'''
-#         UPDATE seller_inventory
-#         SET quantity = quantity - {quantity}
-#         WHERE uid = {seller_id} AND pid = {pid}
-#         '''
-#         app.db.execute(seller_query)
-#         if seller_quantity == quantity:
-#             product_query = f'''
-#             UPDATE products
-#             SET available = false
-#             WHERE id = {pid}
-#             '''
-#             app.db.execute(product_query)
-#     else:
-#         raise ValueError("Seller does not have enough inventory for requested quantity.")
+def get_seller_quantity(uid, pid):
+    query = '''
+    SELECT quantity
+    FROM seller_inventory
+    WHERE uid = :uid AND pid = :pid
+    '''
+    result = app.db.execute(query, uid=uid, pid=pid)
+    return result[0][0]
 
 def get_cart_id(uid):
-    cart_query = f'''
+    cart_query = '''
     SELECT id
     FROM carts
-    WHERE uid = {uid}
+    WHERE uid = :uid
     '''
-    result = app.db.execute(cart_query)
+    result = app.db.execute(cart_query, uid=uid)
 
     # Check if any rows were returned
     if not result:
