@@ -2,18 +2,20 @@ from werkzeug.security import generate_password_hash
 import csv
 from faker import Faker
 import random
+from datetime import datetime, timedelta
 
 num_users = 100
 num_products = 2000
 num_purchases = 2500
-num_product_ratings = 10000
+num_product_ratings = 1000
 num_seller_ratings = 1000
 
 Faker.seed(0)
 fake = Faker()
 
 # api_key = "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"
-# openai.api_key = api_key
+# client = OpenAI(api_key=api_key)
+
 
 def get_csv_writer(f):
     return csv.writer(f, dialect='unix')
@@ -42,7 +44,6 @@ def gen_users(num_users):
             writer.writerow([uid, email, password, firstname, lastname, address, balance])
         print(f'{num_users} generated')
     return available_users
-
 
 
 def gen_products(num_products):
@@ -129,7 +130,6 @@ def gen_product_tags(category):
     return tag, subtag
 
 
-
 # def gen_purchases(num_purchases, available_pids):
 #     with open('Purchases.csv', 'w') as f:
 #         writer = get_csv_writer(f)
@@ -165,64 +165,92 @@ def gen_sellers(user_ids, probability):
     return  available_sellers
 
 
-def gen_seller_inventory(seller_uids, product_uids, max_products, max_quantity_per_product):
+def gen_seller_inventory(seller_uids, product_uids, max_quantity_per_product):
     with open('Seller_Inventory.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('Seller Inventory...', end=' ', flush=True)
-        for seller_uid in seller_uids:
-            num_products = fake.random_int(min=0, max=max_products)
-            selected_products = random.sample(product_uids, num_products)
+        for product_uid in product_uids:
+            num_sellers = fake.random_int(min=1, max=len(seller_uids)//10)
+            selected_sellers = random.sample(seller_uids, num_sellers)
 
-            for product_uid in selected_products:
+            for seller_uid in selected_sellers:
                 quantity = fake.random_int(min=1, max=max_quantity_per_product)
                 writer.writerow([seller_uid, product_uid, quantity])
 
         print(f'{len(seller_uids)} seller inventory records generated')
 
     return
-#need time, uid, sellerid, purchase id
+
+from datetime import datetime, timedelta
+
 def gen_purchases(user_ids, num_orders):
     with open('Purchases.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('Purchases...', end=' ', flush=True)
         available_pids = [] 
         for pid in range(1, num_orders + 1):
-            available_pids.append(pid)
+            
             if pid % 100 == 0:
                 print(f'{pid}', end=' ', flush=True)
-            time_purchased = fake.date_time()
+            time_purchased = fake.date_time_between(start_date='-1y', end_date='now')  # Adjust the date range as needed
+            available_pids.append((pid, time_purchased))
             uid = random.choice(user_ids)
             writer.writerow([pid, uid, time_purchased])
         print(f'{num_orders} generated')
     return available_pids
 
-def gen_bought_line_items(available_purchases, seller_ids, product_ids, mode):
-
-    with open('BoughtLineItems.csv', mode) as f:
+def gen_bought_line_items(available_purchases, seller_ids, product_ids):
+    with open('BoughtLineItems.csv', 'w') as f:
         writer = get_csv_writer(f)
         print('BoughtLineItems...', end=' ', flush=True)
 
         total_line_items = 0
         generated_combinations = set()
 
-        for purchase_id in available_purchases:
+        for purchase_id, time_purchased in available_purchases:
             num_line_items = fake.random_int(1, 10)
+            order_fulfilled = False
+            order_fulfillment_date = None
+
+            # if fulfill_orders:
+                # Determine if the order is fulfilled based on its purchase date
+            order_fulfilled = (datetime.utcnow() - time_purchased) > timedelta(days=14)
+
+                # if order_fulfilled:
+                #     # Generate a random fulfillment date within two weeks
+                #     order_fulfillment_date = fake.date_time_between(start_date=purchase_date, end_date=purchase_date + timedelta(days=14))
+
             for _ in range(num_line_items):
                 while True:
                     sid = random.choice(seller_ids)
                     pid = random.choice(product_ids)
                     combination = (purchase_id, sid, pid)
 
+                    # Default purchase_date to a value in case fulfill_orders is False
+
                     if combination not in generated_combinations:
                         generated_combinations.add(combination)
                         qty = fake.random_int(min=1, max=10)
                         price = '{:.2f}'.format(fake.pydecimal(min_value=10, max_value=100, right_digits=2))
-                        fulfilled = fake.boolean()
-                        writer.writerow([purchase_id, sid, pid, qty, price, fulfilled])
+
+                        # Determine line item fulfillment status and time_fulfilled
+                        line_item_fulfilled = True if order_fulfilled else fake.boolean()
+                        line_item_fulfillment_date = (
+                            # order_fulfillment_date
+                            fake.date_time_between(start_date=time_purchased, end_date=time_purchased+timedelta(days=14))
+                            if order_fulfilled
+                            else fake.date_time_between(start_date=time_purchased, end_date='now')
+                        )
+
+                        # Write to CSV
+                        writer.writerow([
+                            purchase_id, sid, pid, qty, price, line_item_fulfilled, line_item_fulfillment_date
+                        ])
                         total_line_items += 1
                         break
+
         print(f'{total_line_items} line items generated')
-    return
+
 
 def gen_cart_line_items(available_carts, seller_ids, product_ids, mode):
 
@@ -332,9 +360,9 @@ available_users = gen_users(num_users)
 available_pids = gen_products(num_products)
 # gen_purchases(num_purchases, available_pids)
 available_seller_ids = gen_sellers(available_users, 0.3) 
-gen_seller_inventory(available_seller_ids, available_pids, 100, 10000) 
+gen_seller_inventory(available_seller_ids, available_pids, 1000) 
 available_purchase_ids = gen_purchases(available_users, 1000)
-gen_bought_line_items(available_purchase_ids, available_seller_ids, available_pids, "w")
+gen_bought_line_items(available_purchase_ids, available_seller_ids, available_pids)
 available_cids = gen_carts(available_users, 1000)
 gen_cart_line_items(available_cids, available_seller_ids, available_pids, "w")
 gen_product_ratings(num_product_ratings, available_pids)
