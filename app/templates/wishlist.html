@@ -59,8 +59,7 @@
             </td>
             <!-- wishlist button -->
             <td>
-                <form method="POST"
-                    action="{{ url_for('index.index') }}">
+                <form method="POST" action="{{ url_for('wishes.move_to_cart', id=item.id, pid=item.pid) }}">
                     <button type="submit" class="wishlist-btn"></button>
                     </button>
                 </form>
