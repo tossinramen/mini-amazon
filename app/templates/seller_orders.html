@@ -4,7 +4,6 @@
 <br><br>
 
 <body>
-  <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
   <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a>
 </body>
 <br><br>
@@ -18,6 +17,11 @@
           <select class="form-control" name="search_type" id="searchType">
             <option value="order_id" {% if search_type=='order_id' %}selected{% endif %}>Order ID</option>
             <option value="product_id" {% if search_type=='product_id' %}selected{% endif %}>Product ID</option>
+            <option value="product_name" {% if search_type=='product_name' %}selected{% endif %}>Product Name</option>
+            <option value="quantity" {% if search_type=='quantity' %}selected{% endif %}>Quantity</option>
+            <option value="order_date" {% if search_type=='order_date' %}selected{% endif %}>Order Date</option>
+            <option value="buyer_info" {% if search_type=='buyer_info' %}selected{% endif %}>Buyer Information</option>
+            <option value="fulfilled_status" {% if search_type=='fulfilled_status' %}selected{% endif %}>Fulfillment Status</option>
           </select>
         </div>
         <div class="form-group">
@@ -41,6 +45,11 @@
           <select class="form-control" name="sort_type" id="sortType">
             <option value="order_id" {% if sort_type=='order_id' %}selected{% endif %}>Order ID</option>
             <option value="product_id" {% if sort_type=='product_id' %}selected{% endif %}>Product ID</option>
+            <option value="product_name" {% if sort_type=='product_name' %}selected{% endif %}>Product ID</option>
+            <option value="quantity" {% if sort_type=='quantity' %}selected{% endif %}>Quantity</option>
+            <option value="order_date" {% if sort_type=='order_date' %}selected{% endif %}>Order Date</option>
+            <option value="buyer_info" {% if sort_type=='buyer_info' %}selected{% endif %}>Buyer Information</option>
+            <option value="fulfilled_status" {% if sort_type=='fulfilled_status' %}selected{% endif %}>Fulfillment Status</option>
           </select>
         </div>
 
@@ -86,7 +95,7 @@
     // Set sort form elements
     const sortTypeElement = document.getElementById('sortType');
     if (sortTypeElement) {
-      sortTypeElement.value = sortType || 'order_id';
+      sortTypeElement.value = sortType || 'order_date';
     }
   }
 
@@ -133,14 +142,17 @@
 
 
 <br><br>
-<h2>Seller's Orders:</h2>
+<h2>Seller's Order History:</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
       <th scope="col">Order ID</th>
       <th scope="col">Product ID</th>
+      <th scope="col">Product Name</th>
       <th scope="col">Quantity</th>
       <th scope="col">Price</th>
+      <th scope="col">Order Date</th>
+      <th scope="col">Buyer Information</th>
       <th scope="col">Fulfilled</th>
       <th scope="col">Action</th> <!-- New column for the action button -->
     </tr>
@@ -150,9 +162,12 @@
     <tr>
       <td>{{ order.id }}</td>
       <td>{{ order.pid }}</td>
+      <td>{{ order.name }}</td>
       <td>{{ order.qty }}</td>
       <td>{{ order.price }}</td>
-      <td>{{ "Yes" if order.fulfilled else "No" }}</td>
+      <td>{{ order.time_purchased }}</td>
+      <td>{{ order.address }}</td>
+      <td>{{ order.time_fulfilled if order.fulfilled else "In Transit" }}</td>
       <td>
         <!-- Add a button to toggle fulfillment status -->
         <form method="POST"

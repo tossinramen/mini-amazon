@@ -3,11 +3,6 @@
 {% block content %}
 
 <br><br>
-<!-- <h3>Your Cart ID: {{ cart_id }}</h3> -->
-<body>
-  <a href="{{ url_for('index.index', uid=uid) }}" type="button" class="btn btn-light">Home</a>
-</body>
-<br><br>
 <h2>Cart Items:</h2>
 
 <form method = "POST" action="{{ url_for('carts.update_all_quantities') }}">

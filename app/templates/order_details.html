@@ -28,7 +28,7 @@
         <td>${{ '%0.2f' % detail.price }}</td>
         <td>{{ detail.seller_name }}</td>
         <td>{{ 'Yes' if detail.fulfilled else 'No' }}</td>
-        <td>{{ detail.fulfillment_time }}</td>
+        <td>{{ detail.time_fulfilled }}</td>
         <td>
           <a href="{{ url_for('seller_rating.redirect_to_seller_page', sid=detail.sid) }}" class="btn btn-light">Add/Edit Review</a>
         </td>

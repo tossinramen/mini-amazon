@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>Mini Amazon</title>
+  <title>Schemu</title>
   <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
   <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
   <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
@@ -49,24 +49,39 @@
   {% block head %}{% endblock %}
 </head>
 
+<style>
+  .btn-custom-black {
+    background-color: #000 !important;
+    color: white;
+  }
+</style>
+
 <body>
   <div class="sidenav">
     {% block msg %}
-    <h1 style="color:aliceblue; font-size: 4em; text-align: center;">Welcome to Schemu!</h1>
-
-      <div style="color: aliceblue; text-align: right; margin-bottom: 25px">
-        {% if current_user.is_authenticated %}
-          Hello {{current_user.firstname}}!
-          <a href="{{ url_for('users.profile') }}" type="button" class="btn btn-light">Profile</a>
+    <a href="{{ url_for('index.index') }}" class="btn btn-custom-black mx-auto d-block">
+      <h1 style="color:white; font-size: 4em; text-align: center;">Welcome to Schemu!</h1>
+    </a>
+    {% if current_user.is_authenticated %}
+      <div class="d-flex justify-content-between" style="color: aliceblue; margin-bottom: 25px">
+        <div>
           <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a>
           <a href="{{ url_for('carts.redirect_to_user_cart') }}" type="button" class="btn btn-light">Cart</a>
           <a href="{{ url_for('carts.orders', uid=current_user.get_id()) }}" type="button" class="btn btn-light">Orders</a>
           <a href="{{ url_for('users.my_purchases') }}" type="button" class="btn btn-light">Purchases</a>
+        </div>
+        <div>
+          Hello {{current_user.firstname}}!
+          <a href="{{ url_for('users.profile') }}" type="button" class="btn btn-light">Profile</a>
           <a href="{{ url_for('users.logout') }}" type="button" class="btn btn-light">Log out</a>
-        {% else %}
-          <a href="{{ url_for('users.login') }}" type="button" class="btn btn-light">Log in</a>
-        {% endif %}
+        </div>
       </div>
+    {% else %}
+      <div style="color: aliceblue; text-align: right; margin-bottom: 25px">
+        <a href="{{ url_for('users.login') }}" type="button" class="btn btn-light">Log in</a>
+      </div>
+    {% endif %}
+  
     {% endblock %}
   </div>
   <div class="main">

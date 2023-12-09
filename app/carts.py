@@ -160,7 +160,7 @@ def order_details(uid, purchase_id):
 #need fulfillment type IF fulfilled. 
 def get_order_details(purchase_id):
     sql_query = '''
-        SELECT pr.name, bli.qty, bli.price, u.firstname, u.lastname, bli.fulfilled, pur.time_purchased, bli.sid
+        SELECT pr.name, bli.qty, bli.price, u.firstname, u.lastname, bli.fulfilled, bli.time_fulfilled
         FROM BoughtLineItems bli
         INNER JOIN Products pr ON bli.pid = pr.id
         INNER JOIN Users u ON bli.sid = u.id
@@ -177,8 +177,7 @@ def get_order_details(purchase_id):
             'price': row[2],
             'seller_name': f"{row[3]} {row[4]}",
             'fulfilled': row[5],
-            'fulfillment_time': row[6] if row[5] else 'Purchase not fulfilled',
-            'sid': row[7]
+            'time_fulfilled': row[6] if row[5] else 'Purchase not fulfilled'
         }
         order_details.append(detail)
 

@@ -1,12 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<br><br>
-<!-- need way to exit the page - home button -->
 
-<body>
-  <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
-</body>
 <br><br>
 <form action="{{ url_for('users.user_purchases', uid=current_user.get_id()) }}" method="get">
   <div class="form-group">

@@ -2,10 +2,6 @@
 
 {% block content %}
 <br><br>
-<body>
-  <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
-</body>
-<br><br>
 <h2>Orders:</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
@@ -13,7 +9,7 @@
       <!-- need order, price, and if fulfilled or not  -->
       <th scope="col">Order</th>
       <th scope="col">Total Price</th>
-      <th scope="col">Order Fulfilled</th>
+      <th scope="col">Order Time</th>
     </tr>
   </thead>
   <tbody>
