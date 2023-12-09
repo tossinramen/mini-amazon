@@ -1,38 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            <a href="{{ url_for('users.redirect_to_seller_inventory') }}" class="btn btn-light">Cancel</a>
+        </div>
+        <div class="col-md-6 text-md-right">
+            <h2 class="mt-md-0 mt-4">Add New Product:</h2>
+        </div>
+    </div>
 
-<body>
-    <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Cancel</a>
-</body>
+    <form class="mt-3" method="POST" action="/add_product">
+        <div class="form-group">
+            <label for="name">Product Name:</label>
+            <input type="text" class="form-control" name="name" required>
+        </div>
 
-<h2>Add New Product:</h2>
-<form method="POST" action="/add_product">
-  <label for="name">Product Name:</label>
-  <input type="text" name="name" required><br>
+        <div class="form-group">
+            <label for="price">Price:</label>
+            <input type="text" class="form-control" name="price" required>
+        </div>
 
-  <label for="price">Price:</label>
-  <input type="text" name="price" required><br>
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <input type="text" class="form-control" name="description" required>
+        </div>
 
-  <label for="description">Description:</label>
-  <input type="text" name="description" required><br>
+        <div class="form-group">
+            <label for="category">Category:</label>
+            <input type="text" class="form-control" name="category" required>
+        </div>
 
-  <label for="category">Category:</label>
-  <input type="text" name="category" required><br>
+        <div class="form-group">
+            <label for="tag">Tag:</label>
+            <input type="text" class="form-control" name="tag" required>
+        </div>
 
-  <label for="tag">Tag:</label>
-  <input type="text" name="tag" required><br>
+        <div class="form-group">
+            <label for="subtag">Subtag:</label>
+            <input type="text" class="form-control" name="subtag" required>
+        </div>
 
-  <label for="subtag">Subtag:</label>
-  <input type="text" name="subtag" required><br>
+        <div class="form-group">
+            <label for="picture">Picture link:</label>
+            <input type="text" class="form-control" name="picture" required>
+        </div>
 
-  <label for="picture">Picture link:</label>
-  <input type="text" name="picture" required><br>
+        <div class="form-group">
+            <label for="quantity">Quantity:</label>
+            <input type="text" class="form-control" name="quantity">
+        </div>
 
-  <label for="quantity">Quantity:</label>
-  <input type="text" name="quantity"><br>
-
-  <input type="submit" value="Add Product">
-</form>
-
+        <input type="submit" class="btn btn-primary" value="Add Product">
+    </form>
+</div>
 {% endblock %}

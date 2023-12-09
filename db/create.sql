@@ -71,6 +71,7 @@ CREATE TABLE Carts (
 );
 
 
+
 CREATE TABLE CartLineItems (    
     id INT NOT NULL REFERENCES Carts(id),
     sid INT NOT NULL REFERENCES Sellers(uid),

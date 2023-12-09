@@ -2,6 +2,8 @@
 
 {% block content %}
 <br><br>
+<!-- need way to exit the page - home button -->
+
 <body>
   <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
 </body>
@@ -21,6 +23,7 @@
   </div>
   <button type="submit" class="btn btn-primary">Search</button>
 </form>
+<!-- need time, product name, quantity, price, seller, fulfilled or not, link for order page-->
 <br><br>
 <h2>Purchase History:</h2>
 <table class='table table-hover table-bordered container'>
@@ -32,6 +35,7 @@
       <th scope="col">Price</th>
       <th scope="col">Seller</th>
       <th scope="col">Fulfilled</th>
+      <th scope="col">Order Page</th>
     </tr>
   </thead>
   <tbody>
@@ -41,8 +45,12 @@
         <td>{{ purchase.product_name }}</td>
         <td>{{ purchase.qty }}</td>
         <td>{{ purchase.price }}</td>
+        <!-- link for public profile, link for order page-->
+
         <td><a href="{{ url_for('users.public_user_profile', user_id=purchase.seller_id) }}">{{ purchase.seller_name }}</a></td>
         <td>{{ purchase.fulfilled }}</td>
+        <td><a href="{{ url_for('carts.order_details', uid=current_user.get_id(), purchase_id=purchase.purchase_id) }}">Order Page</a></td>
+        
       </tr>
     {% endfor %}
   </tbody>

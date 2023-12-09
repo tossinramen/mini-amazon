@@ -30,3 +30,47 @@ class Cart:
             line_items = None
 
         return line_items
+    
+    @staticmethod
+    def clear_cart(uid):
+        app.db.execute('''
+            DELETE FROM CartLineItems
+            WHERE id IN (
+                SELECT id FROM Carts WHERE uid = :uid
+            )''', uid=uid)
+        
+        curr_ids =  app.db.execute('''
+            SELECT id
+            FROM Carts
+            ''')
+        max_id = 0
+        for id in curr_ids:
+            max_id = max(id[0], max_id)
+        
+        
+        app.db.execute('''
+            DELETE FROM Carts
+            WHERE id IN (
+                SELECT id FROM Carts WHERE uid = :uid
+            )''', uid=uid)
+        
+        # Cart.create_new_cart(max_id+1,uid)
+    
+    @staticmethod
+    def create_new_cart(id, uid):
+
+        new_cart_id = app.db.execute('''
+            INSERT INTO Carts (id, uid)
+            VALUES (:id, :uid)
+            RETURNING id
+            ''', id=id, uid=uid)
+        return new_cart_id
+
+    @staticmethod
+    def get_id_by_uid(uid):
+         row = app.db.execute('''
+            SELECT id
+            FROM Carts
+            WHERE uid = :uid
+            ''', uid=uid)
+         return row[0][0] if row else None

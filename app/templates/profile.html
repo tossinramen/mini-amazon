@@ -28,7 +28,7 @@
             <p class="card-text"><strong>Account Balance:</strong> ${{ "%.2f"|format(user.balance) }}</p>
         </div>
         <div class="card-footer">
-            <a href="{{ url_for('users.user_spending', uid=user.id) }}" class="btn btn-light" style="width: 100%;">Balance History</a>
+            <a href="{{ url_for('users.user_spending', uid=user.id) }}" class="btn btn-light" style="width: 100%; margin-bottom: 5px;">Balance History</a>
             <a href="{{ url_for('product_rating.product_rating', uid=user.id, page=1) }}" class="btn btn-light" style="width: 100%; margin-bottom: 5px;">Product Reviews</a>
             <a href="{{ url_for('seller_rating.seller_rating', uid=user.id, page=1) }}" class="btn btn-light" style="width: 100%;">Seller Reviews</a>
         </div>

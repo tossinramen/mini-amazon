@@ -3,7 +3,7 @@
 {% block content %}
 
 <br><br>
-
+<!-- <h3>Your Cart ID: {{ cart_id }}</h3> -->
 <body>
   <a href="{{ url_for('index.index', uid=uid) }}" type="button" class="btn btn-light">Home</a>
 </body>
@@ -59,7 +59,8 @@
 
   
   <div class="text-right">
-    <button type="submit" class="btn btn-info btn-lg">Update Quantities</button>
+    <button type="submit" class="btn btn-info btn-lg cart-action-btn">Update Quantities</button>
+    <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.submit_cart') }}">Submit Cart</button>
   </div>
 </form>
 
