@@ -5,6 +5,7 @@ import csv
 import random
 import hashlib
 from .models.seller_inventory import SellerInventory
+from decimal import Decimal
 
 from .models.cart import Cart
 from .models.purchase import Purchase
@@ -224,6 +225,19 @@ def submit_cart():
     user_id = current_user.id
     # fetch cart items
     cart_items = Cart.get_items_by_uid(user_id)
+
+    
+    # calculate total cost of cart
+    total_cost = sum(Decimal(item.price) * item.qty for item in cart_items)
+
+    # fetch current user balance
+    current_balance = Decimal(current_user.balance)
+
+    # balance handling
+    if total_cost > current_balance:
+        # alert user
+        abort(400, "Insufficient balance to complete this purchase. Please add funds to your balance.")
+
     # check curr inventory for each product in cart
     for item in cart_items:
         inventory_query = 'SELECT quantity FROM Seller_Inventory WHERE pid = :pid AND uid = :uid'
@@ -302,22 +316,28 @@ def product_details(pid):
                            avg_stars=avg_stars,
                            seller_info=seller_info)
 
-@bp.route('/add_to_wishlist/<int:id>', methods=['POST'])
-def add_to_wishlist(id):
+@bp.route('/add_to_wishlist/<int:id>/<int:pid>/<int:sid>', methods=['POST'])
+def add_to_wishlist(id, pid, sid):
     # check if the item is already in the wishlist
     existing_wishlist_item = app.db.execute(
-        "SELECT * FROM Wishlist WHERE user_id = :user_id AND product_id = :pid",
-        user_id=current_user.id, pid=pid
+        "SELECT * FROM Wishes WHERE uid = :user_id AND pid = :pid",
+        user_id=current_user.id, pid = pid
     )
 
     if existing_wishlist_item:
-        pass
+        abort(400, "Item already exists in your wishlist")
     else:
         # add the item to the wishlist
         app.db.execute(
-            "INSERT INTO Wishlist (user_id, product_id) VALUES (:user_id, :pid)",
+            "INSERT INTO Wishes (uid, pid) VALUES (:user_id, :pid)",
             user_id=current_user.id, pid=pid
         )
+        app.db.execute('''
+            DELETE FROM CartLineItems
+            WHERE id = :id
+            AND pid = :pid
+            AND sid = :sid
+            ''', id=id, pid=pid, sid=sid, uid=current_user.id)
         
 
     return redirect(url_for('carts.cart', uid=current_user.id))
@@ -327,8 +347,9 @@ def add_to_wishlist(id):
 def view_wishlist(uid):
     # Retrieve wishlist items for the user
     wishlist_items = app.db.execute(
-        "SELECT * FROM Wishlist INNER JOIN Products ON Wishlist.product_id = Products.id WHERE user_id = :uid",
+        "SELECT Wishes.id as id, Products.id as pid, Products.name as p_name, CONCAT(users.firstname, ' ', users.lastname) AS name, price FROM Wishes, Users, Products  WHERE Wishes.pid = Products.id AND Wishes.uid = :uid and Users.id = Wishes.uid",
         uid=uid
     )
 
     return render_template('wishlist.html', wishlist_items=wishlist_items, uid=uid)
+

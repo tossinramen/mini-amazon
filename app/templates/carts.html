@@ -67,7 +67,7 @@
           </td>
           <!-- wishlist button -->
           <td>
-            <form method="POST" action="{{ url_for('carts.add_to_wishlist', id=item.id) }}">
+            <form method="POST" action="{{ url_for('carts.add_to_wishlist', id=item.id, pid=item.pid, sid=item.sid) }}">
               <button type="submit" class="wishlist-btn"></button>
               </button>
             </form>
@@ -89,9 +89,9 @@
 
   <!-- buttons at btm of pg -->
   <div class="text-right">
-    <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.view_wishlist', uid=current_user.id) }}">View Wishlist</button>
+    <a href="{{ url_for('carts.view_wishlist', uid=current_user.id) }}" class="btn btn-success btn-lg cart-action-btn">View Wishlist</a>
     <button type="submit" class="btn btn-info btn-lg cart-action-btn">Update Quantities</button>
-    <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.submit_cart') }}">Submit Cart</button>
+    <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.redirect_to_user_cart') }}">Submit Cart</button>
   </div>
 </form>
 

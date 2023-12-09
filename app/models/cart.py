@@ -31,7 +31,7 @@ class Cart:
         # if exists, else set to none
         if cart:
             # get line items in the cart
-            query = '''SELECT li.id as id, li.sid as sid, u.firstname || ' ' || u.lastname as seller_name, li.pid as pid, li.qty as qty, li.price as price, p.name as product_name
+            query = '''SELECT li.id as id, li.sid as sid, u.firstname || ' ' || u.lastname as seller_name, li.pid as pid, li.qty as qty, li.price as price, p.name as product_name 
             FROM CartLineItems as li 
             JOIN Products p ON p.id = li.pid
             JOIN Users u ON li.sid = u.id

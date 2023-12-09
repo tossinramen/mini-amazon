@@ -36,19 +36,11 @@ body {
   width: 50%;
 }
 
-.remove-btn {
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-}
-
 .remove-icon {
   display: inline-block;
   padding: .5rem;
   font-size: 1.2rem;
-  color: var(--error-color);
+  color: #ddd;
   transition: all 0.3s ease;
   border-radius: 0.25rem;
 }
@@ -181,4 +173,12 @@ a:hover {
   content: '\2713'; 
   color: white;
   font-weight: bold;
+}
+
+.remove-btn {
+  border: none;
+  background-color: #ff474c;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
 }
