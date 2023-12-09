@@ -25,7 +25,16 @@ class Cart:
     
         if cart:
             # get line items in the cart
-            line_items = LineItem.get_by_id(cart.id)
+            query = '''SELECT li.id as id, li.sid as sid, u.firstname || ' ' || u.lastname as seller_name, li.pid as pid, li.qty as qty, li.price as price, p.name as product_name
+            FROM CartLineItems as li 
+            JOIN Products p ON p.id = li.pid
+            JOIN Users u ON li.sid = u.id
+            WHERE li.id = :id
+            AND u.id = li.sid
+            ORDER BY p.name ASC
+            '''
+            line_items = app.db.execute(query, id=cart.id)
+            # line_items = LineItem.get_by_id(cart.id)
         else:
             line_items = None
 

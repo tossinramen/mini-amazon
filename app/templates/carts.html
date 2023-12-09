@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <br><br>
 <!-- <h3>Your Cart ID: {{ cart_id }}</h3> -->
 <body>
@@ -11,14 +10,23 @@
 <h2>Cart Items:</h2>
 
 <form method = "POST" action="{{ url_for('carts.update_all_quantities') }}">
+  <script>
+    function redirectToProductDetails(pid) {
+      var baseUrl = "{{ url_for('carts.product_details', pid=0) }}";
+      var urlWithPid = baseUrl.replace('0', pid);
+      window.location = urlWithPid;
+    }
+  </script>
   <table class='table table-hover table-bordered container'>
     <thead class="thead-dark">
       <tr>
         <th scope="col">Product Name</th>
+        <th scope="col">Seller Name</th>
         <th scope="col">Price</th>
         <th scope="col">Quantity</th>
         <th scope="col">Total Price</th>
         <th scope="col">Remove</th>
+        <th scope="col">Add to Wishlist</th>
       </tr>
     </thead>
 
@@ -29,7 +37,8 @@
       {% set item_total = item.price * item.qty %}
       {% set cart_totals.total = cart_totals.total + item_total %}
         <tr>
-          <td>{{ item.product_name }}</td>
+          <td onclick="redirectToProductDetails({{ item.pid }});">{{ item.product_name }}</td>
+          <td>{{ item.seller_name }}</td>
           <td>${{ '%0.2f' % item.price }}</td>
           <td>
             <input type="number" name="quantity_{{ item.id }}_{{ item.pid }}_{{ item.sid }}" value="{{ item.qty }}" min="1" class="form-control">
@@ -40,6 +49,12 @@
               <input type="hidden" name="user_id" value="{{ uid }}">
               <button type="submit" class="btn remove-btn">
                 <span class="remove-icon">&times;</span>
+              </button>
+            </form>
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('carts.add_to_wishlist', id=item.id) }}">
+              <button type="submit" class="wishlist-btn"></button>
               </button>
             </form>
           </td>
@@ -57,8 +72,9 @@
   
   <input type="hidden" name="user_id" value="{{ uid }}">
 
-  
+
   <div class="text-right">
+    <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.view_wishlist', uid=current_user.id) }}">View Wishlist</button>
     <button type="submit" class="btn btn-info btn-lg cart-action-btn">Update Quantities</button>
     <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.submit_cart') }}">Submit Cart</button>
   </div>
