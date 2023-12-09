@@ -71,6 +71,7 @@ CREATE TABLE Carts (
 );
 
 
+
 CREATE TABLE CartLineItems (    
     id INT NOT NULL REFERENCES Carts(id),
     sid INT NOT NULL REFERENCES Sellers(uid),
@@ -87,5 +88,7 @@ CREATE TABLE BoughtLineItems (
     qty INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     fulfilled BOOLEAN DEFAULT FALSE,
+    
     PRIMARY KEY (id, sid, pid)
 );
+

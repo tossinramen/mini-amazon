@@ -3,8 +3,11 @@
 {% block content %}
   <br><br>
   <body>
-    <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
     <a href="{{ url_for('users.my_past_seller_orders') }}" type="button" class="btn btn-light">Past Orders</a> <!-- Add this button -->
+  </body>
+  <br><br>
+  <body>
+    <a href="{{ url_for('seller_inventory.redirect_to_add_product_page') }}" type="button" class="btn btn-light">Add Product</a>
   </body>
   <br><br>
   <h2>Seller's Inventory:</h2>
@@ -13,6 +16,7 @@
       <tr>
         <th scope="col">Product ID</th>
         <th scope="col">Quantity</th>
+        <th scope="col" style="width: 100px;"></th>
       </tr>
     </thead>
     <tbody>
@@ -20,6 +24,7 @@
         <tr>
           <td>{{ item.pid }}</td>
           <td>{{ item.quantity }}</td>
+          <td><a href="{{ url_for('seller_inventory.redirect_to_edit_quantity', pid=item.pid) }}"  type="button" class="btn btn-light">Edit Quantity</a></td>
         </tr>
       {% endfor %}
     </tbody>

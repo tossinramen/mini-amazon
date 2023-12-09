@@ -6,20 +6,21 @@ import random
 num_users = 100
 num_products = 2000
 num_purchases = 2500
-num_product_ratings = 1000
+num_product_ratings = 10000
 num_seller_ratings = 1000
 
 Faker.seed(0)
 fake = Faker()
 
 # api_key = "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"
-# client = OpenAI(api_key=api_key)
-
+# openai.api_key = api_key
 
 def get_csv_writer(f):
     return csv.writer(f, dialect='unix')
 
-
+#MAKE SURE BALANCE IS DECIMAL NOT INTEGER
+#split name into first and last
+#uid, email, password, firstname, lastname, address, balance
 def gen_users(num_users):
     with open('Users.csv', 'w') as f:
         writer = get_csv_writer(f)
@@ -37,10 +38,11 @@ def gen_users(num_users):
             firstname = name_components[0]
             lastname = name_components[-1]
             address = fake.address().replace("\n", ", ")
-            balance = round(fake.pydecimal(left_digits=5, right_digits=2, positive=True), 2)
+            balance = 0.00
             writer.writerow([uid, email, password, firstname, lastname, address, balance])
         print(f'{num_users} generated')
     return available_users
+
 
 
 def gen_products(num_products):
@@ -127,6 +129,7 @@ def gen_product_tags(category):
     return tag, subtag
 
 
+
 # def gen_purchases(num_purchases, available_pids):
 #     with open('Purchases.csv', 'w') as f:
 #         writer = get_csv_writer(f)
@@ -177,7 +180,7 @@ def gen_seller_inventory(seller_uids, product_uids, max_products, max_quantity_p
         print(f'{len(seller_uids)} seller inventory records generated')
 
     return
-
+#need time, uid, sellerid, purchase id
 def gen_purchases(user_ids, num_orders):
     with open('Purchases.csv', 'w') as f:
         writer = get_csv_writer(f)

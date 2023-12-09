@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<br><br>
+
+<body>
+  <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Cancel</a>
+</body>
+
+<h2>Product Overview:</h2>
+<table class='table table-hover table-bordered container'>
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Product ID</th>
+      <th scope="col">Quantity</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for prod in product%}
+      <tr>
+        <td>{{prod.pid}}</td>
+        <td>{{prod.quantity}}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<head>
+    <title>Update Quantity</title>
+</head>
+<body>
+    {% for prod in product%}
+    <h1>Update Quantity</h1>
+    <form method="POST" action="/update_quantity">
+        <label for="new_quantity">New Quantity:</label>
+        <input type="text" name="new_quantity"><br>
+        
+        <input type="hidden" name="pid" value="{{prod.pid}}">
+        <input type="submit" value="Update">
+    </form>
+    {% endfor %}
+</body>
+
+{% endblock %}

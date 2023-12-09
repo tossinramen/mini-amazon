@@ -1,145 +1,163 @@
-section {
-color: #fff;
-text-align: center;
+
+:root {
+  --primary-color: #6c5ce7; 
+  --secondary-color: #74b9ff; 
+  --background-gradient-start: #74b9ff; 
+  --background-gradient-end: #a29bfe; 
+  --btn-hover-color: #0984e3;
+  --error-color: #d63031; 
+  --button-background: #007bff; 
+  --button-hover-background: #0056b3; 
+  --text-color: #333; 
+}
+
+body {
+  font-family: 'Lato', sans-serif;
+  background: linear-gradient(to bottom right, var(--background-gradient-start), var(--background-gradient-end));
+  color: #fff;
 }
 
 .container {
-display: table;
-width: 100%;
+  display: table;
+  width: 100%;
 }
 
 .left-half {
-background-color: #ff9e2c;
-position: absolute;
-left: 0px;
-width: 50%;
+  background-color: var(--primary-color);
+  position: absolute;
+  left: 0;
+  width: 50%;
 }
 
 .right-half {
-background-color: #b6701e;
-position: absolute;
-right: 0px;
-width: 50%;
+  background-color: var(--secondary-color);
+  position: absolute;
+  right: 0;
+  width: 50%;
 }
 
 .remove-btn {
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-    padding: 0;
-    outline: none;
-  }
-  
-  .remove-icon {
-    display: inline-block;
-    padding: .5rem;
-    font-size: 1.2rem;
-    color: #dc3545;
-    transition: all 0.3s ease;
-    border-radius: 0.25rem;
-  }
-  
-  .remove-btn:hover .remove-icon {
-    color: #fff;
-    background-color: #dc3545;
-    box-shadow: 0 0 10px #dc3545;
-    border-radius: 0.25rem;
-  }
-  
-body {
-    font-family: 'Lato', sans-serif;
-    background: linear-gradient(to bottom right, #004d7a, #008793);
-    color: #fff;
-  }
-  
-  .login-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+}
+
+.remove-icon {
+  display: inline-block;
+  padding: .5rem;
+  font-size: 1.2rem;
+  color: var(--error-color);
+  transition: all 0.3s ease;
+  border-radius: 0.25rem;
+}
+
+.remove-btn:hover .remove-icon {
+  color: #fff;
+  background-color: var(--error-color);
+  box-shadow: 0 0 10px var(--error-color);
+}
+
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.login-box {
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  color: var(--text-color);
+}
+
+.login-form h1 {
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.login-form label {
+  float: left;
+  color: var(--text-color);
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 0.25rem;
+  color: var(--text-color);
+}
+
+.login-form input[type="submit"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.25rem;
+  background: var(--button-background);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.login-form input[type="submit"]:hover {
+  background: var(--button-hover-background);
+}
+
+.login-form a {
+  text-decoration: none;
+  color: var(--text-color);
+  display: block;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.login-form a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: var(--error-color);
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .login-box {
     padding: 1rem;
   }
-  
-  .login-box {
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    color: #333; 
-  }
-  
-  .login-form {
-    margin: 0;
-  }
-  
-  .login-form h1 {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-  }
-  
-  .login-form label {
-    float: left;
-    color: #333;
-  }
-  
-  .login-form input[type="text"],
-  .login-form input[type="password"] {
-    width: 100%;
-    padding: 0.5rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 0.25rem;
-    color: #333;
-  }
-  
-  .login-form input[type="submit"] {
-    width: 100%;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 0.25rem;
-    background: #007bff;
-    color: #000; 
-    font-size: 1rem;
-    cursor: pointer;
-    margin-bottom: 1rem;
-  }
-  
-  .login-form input[type="submit"]:hover {
-    background: #0056b3;
-  }
-  
-  .login-form a {
-    text-decoration: none;
-    color: #007bff;
-    display: block;
-    text-align: center;
-    margin-top: 1rem;
-  }
-  
-  .login-form a:hover {
-    text-decoration: underline;
-  }
-  
-  .error {
-    color: red;
-    font-size: 0.875rem;
-  }
-  
-  @media (max-width: 768px) {
-    .login-box {
-      padding: 1rem;
-    }
-  }
-  
-  .btn, .btn-light, .btn-primary, .btn-secondary, .btn-success, .btn-info, .btn-warning, .btn-danger {
-    color: #000 !important; 
-    font-weight: bold;
-  }
-  
-  h1, h2, h3, h4, h5, h6, p, a, label {
-    font-family: 'Lato', sans-serif;
-    font-size: larger;
-    font-weight: bold; 
-  }
+}
+
+.btn, .btn-light, .btn-primary, .btn-secondary, .btn-success, .btn-info, .btn-warning, .btn-danger {
+  color: #000 !important; 
+  font-weight: bold;
+  background: var(--primary-color);
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background: var(--btn-hover-color);
+}
+
+h1, h2, h3, h4, h5, h6, p, a, label {
+  font-family: 'Lato', sans-serif;
+  font-size: larger;
+  font-weight: bold;
+}
+
+a {
+  color: #fff; 
+  text-decoration: none; 
+}
+a:hover {
+  text-decoration: underline;
+}

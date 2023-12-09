@@ -19,7 +19,7 @@
 
     .sidenav {
         height: 100%;
-        background-color: #000;
+        background-color: #000000;
         overflow-x: hidden;
         padding-top: 20px;
     }
@@ -45,6 +45,10 @@
   </style>
 </head>
 
+<head>
+  {% block head %}{% endblock %}
+</head>
+
 <body>
   <div class="sidenav">
     {% block msg %}
@@ -53,12 +57,15 @@
       <div style="color: aliceblue; text-align: right; margin-bottom: 25px">
         {% if current_user.is_authenticated %}
           Hello {{current_user.firstname}}!
+          <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
           <a href="{{ url_for('users.profile') }}" type="button" class="btn btn-light">Profile</a>
           <a href="{{ url_for('users.redirect_to_seller_inventory') }}" type="button" class="btn btn-light">Seller Page</a>
           <a href="{{ url_for('carts.redirect_to_user_cart') }}" type="button" class="btn btn-light">Cart</a>
-          <a href="{{ url_for('users.my_purchases') }}" type="button" class="btn btn-light">Orders</a>
+          <a href="{{ url_for('carts.orders', uid=current_user.get_id()) }}" type="button" class="btn btn-light">Orders</a>
+          <a href="{{ url_for('users.my_purchases') }}" type="button" class="btn btn-light">Purchases</a>
           <a href="{{ url_for('users.logout') }}" type="button" class="btn btn-light">Log out</a>
         {% else %}
+          <a href="{{ url_for('index.index') }}" type="button" class="btn btn-light">Home</a>
           <a href="{{ url_for('users.login') }}" type="button" class="btn btn-light">Log in</a>
         {% endif %}
       </div>
@@ -70,3 +77,4 @@
 </body>
 
 </html>
+

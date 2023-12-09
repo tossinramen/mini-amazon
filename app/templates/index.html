@@ -11,7 +11,7 @@
 </div>
 <br><br>
 
-<h2 class="text-center">Products for sale:</h2>
+<h2 class="text-center">Recommended Products</h2>
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
@@ -51,28 +51,6 @@
 
 <br><br>
 
-{% if current_user.is_authenticated %}
-<h2 class="text-center">Your recent purchases:</h2>
-<table class='table table-hover table-bordered container'>
-  <thead class="thead-dark">
-    <tr>
-      <th scope="col">Purchase ID</th>
-      <th scope="col">Sold By</th>
-      <th scope="col">Time Purchased</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for purchase in purchase_history %}
-      <tr>
-        <th scope="row">{{ purchase.id }}</th>
-        <td>{{ purchase.pid }}</td>
-        <td>{{ purchase.time_purchased }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
-{% else %}
-<p class="text-center"><a href="{{ url_for('users.login') }}">Log in</a> to see your purchase history!</p>
-{% endif %}
+
 
 {% endblock %}

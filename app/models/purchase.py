@@ -30,3 +30,12 @@ ORDER BY p.time_purchased DESC
                               uid=uid,
                               since=since)
         return [Purchase(*row) for row in rows]
+    
+    @staticmethod
+    def create(id, uid):
+        result = app.db.execute('''
+            INSERT INTO Purchases(id, uid, time_purchased)
+            VALUES(:id, :uid, CURRENT_TIMESTAMP)
+            RETURNING id
+        ''', id=id, uid=uid)
+        # return result.fetchone()[0]
