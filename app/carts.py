@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, abort, request, current_app as app
+from flask import render_template, redirect, url_for, abort, request, current_app as app
 from flask_login import current_user
 import datetime
 import csv
@@ -311,14 +311,14 @@ def add_to_wishlist(id):
     )
 
     if existing_wishlist_item:
-        flash("Item is already in the wishlist", "error")
+        pass
     else:
         # add the item to the wishlist
         app.db.execute(
             "INSERT INTO Wishlist (user_id, product_id) VALUES (:user_id, :pid)",
             user_id=current_user.id, pid=pid
         )
-        flash("Item added to wishlist", "success")
+        
 
     return redirect(url_for('carts.cart', uid=current_user.id))
 
