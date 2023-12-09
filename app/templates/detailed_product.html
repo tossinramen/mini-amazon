@@ -2,11 +2,11 @@
 
 {% block content %}
   <div class="container mt-5">
-    <h2>{{ name }} Details</h2>
+    <h2>{{ name }}</h2>
 
     <div class="row">
       <div class="col-md-6">
-        <img src="{{ image_url }}" alt="{{ name }} Image" class="img-fluid">
+        <img src="{{ image_url }}" alt="{{ name }} Image" class="img-fluid" style="width: 500px;">
       </div>
       <div class="col-md-6">
         <p><strong>Description:</strong> {{ description }}</p>
@@ -23,27 +23,183 @@
           </span>
         </p>
         <p><strong>Average Rating:</strong> {{ '{:.2f}/5'.format(avg_stars) if avg_stars is not none else 'Not rated' }}</p>
+        <p><strong>Number of Ratings:</strong> {{ '{:.0f}'.format(num_ratings) if num_ratings is not none else '0' }}</p>
+        {% if current_user.is_authenticated %}
+          <form METHOD="POST" id="addToCartForm">
+            <label for="sellerSelect">Select Seller:</label>
+            <select class="form-control" id="sellerSelect" name="seller_id" style="width: 500px;">
+                <option value="" disabled selected>Select a Seller</option>
+                {% for seller in seller_info %}
+                    <option value="{{ seller.uid }}" data-stock="{{ seller.quantity }}">{{ seller.name }}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <br>
+            <label for="quantitySelect">Quantity:</label>
+            <input type="number" id="quantitySelect" name="quantity" value="1" min="1">
+            <br>
+            <br>
+            <input type="hidden" id="productId" name="pid" value="{{ id }}">
+            <input type="hidden" id="userId" name="user_id" value="{{ current_user.id }}">
+            <input type="hidden" id="sellerInput" name="seller_id" value="{{ seller_id }}"> <!-- Updated to an empty value initially -->
+            <input type="hidden" id="quantityInput" name="quantity" value="1" min="1">
+            <button type="submit" class="btn btn-primary" onclick="submitAddToCart();">Add to Cart</button>
+            <script>
+                function submitAddToCart() {
+                  document.getElementById("addToCartForm").action = "{{ url_for('products.add_to_cart', pid=pid) }}"
+                  document.getElementById("addToCartForm").submit();
+                }
+            </script>
+          </form>
+            {% if success == 1 %}
+            <div class="alert alert-success" role="alert">
+              {{ success_message }}
+            </div>
+            {% endif %}
+          </form>
+        {% endif %}
       </div>
     </div>
     <br>
     <h3>Sellers and Stock Quantities</h3>
-        <table class="table">
-        <thead>
-            <tr>
-            <th scope="col">Seller ID</th>
-            <th scope="col">Seller Name</th>
-            <th scope="col">Quantity in Stock</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for seller in seller_info %}
-            <tr>
-                <td>{{ seller.uid }}</td>
-                <td>{{ seller.name }}</td>
-                <td>{{ seller.quantity }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-        </table>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Seller ID</th>
+          <th scope="col">Seller Name</th>
+          <th scope="col">Quantity in Stock</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for seller in seller_info %}
+          <tr>
+            <td>{{ seller.uid }}</td>
+            <td>{{ seller.name }}</td>
+            <td>{{ seller.quantity }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <script>
+      function updateQuantity() {
+        var selectedSeller = document.getElementById("sellerSelect");
+        var quantityInput = document.getElementById("quantityInput");
+        var selectedOption = selectedSeller.options[selectedSeller.selectedIndex];
+
+        // Check if a seller is selected
+        if (selectedOption.value === "") {
+          alert("Please select a seller first.");
+          quantityInput.value = 1;  // Reset quantity to 1 when no seller is selected
+          return;
+        }
+
+        var maxQuantity = selectedOption.getAttribute("data-stock");
+        quantityInput.setAttribute("max", maxQuantity);
+        quantityInput.value = 1;  // Reset quantity to 1 when the seller changes
+      }
+
+      function validateForm() {
+        var selectedSeller = document.getElementById("sellerSelect");
+        var quantityInput = document.getElementById("quantityInput");
+        var selectedOption = selectedSeller.options[selectedSeller.selectedIndex];
+        var maxQuantity = selectedOption.getAttribute("data-stock");
+        var selectedQuantity = quantityInput.value;
+
+        // Check if a seller is selected
+        if (selectedOption.value === "") {
+          alert("Please select a seller first.");
+          return false;
+        }
+
+        // Check if the quantity exceeds the available stock
+        if (selectedQuantity > maxQuantity) {
+          alert("Quantity exceeds the available stock. Please select a lower quantity.");
+          return false;
+        }
+
+        // Form is valid, proceed with submission
+        return true;
+      }
+    </script>
   </div>
+  <h2>Reviews:</h2>
+  {% if allowed == 1 %}
+    {% if reviewed_allowed == 1 %}
+    <div class="add-review-button">
+      
+        <a href="{{ url_for('product_rating.redirect_to_add_review', pid=pid) }}" class="btn btn-primary">Add Review</a>
+        <br><br>
+      </div>
+    {% else %}
+      <p class="message">You can only add one review per product.</p>
+      <h2>My Review:</h2>
+      <table class='table table-hover table-bordered container'>
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Reviewer Name</th>
+            <th scope="col">Stars</th>
+            <th scope="col">Description</th>
+            <th scope="col">Upvotes</th>
+            <th scope="col">Downvotes</th>
+            <th scope="col">Time Reviewed</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+      
+        <tbody>
+          {% for rating in user_rating_info%}
+            <tr>
+              <td>{{rating.firstname}} {{rating.lastname}}</td>
+              <td>{{rating.stars}}</td>
+              <td>{{rating.description}}</td>
+              <td>{{rating.upvotes}}</td>
+              <td>{{rating.downvotes}}</td>
+              <td>{{rating.time_reviewed}}</td>
+              <td>
+                <a href="{{ url_for('product_rating.redirect_to_edit_review', pid=rating.pid) }}" class="btn btn-light">Edit Review</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>  
+    {% endif %}  
+  {% else %}
+    <p class="message">You can only add a review if you have bought the product.</p>
+  {% endif %}
+<table class='table table-hover table-bordered container'>
+  <thead class="thead-dark">
+    <tr>
+      <th scope="col">Reviewer Name</th>
+      <th scope="col">Stars</th>
+      <th scope="col">Description</th>
+      <th scope="col">Upvotes</th>
+      <th scope="col">Downvotes</th>
+      <th scope="col">Time Reviewed</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for rating in rating_info%}
+      <tr>
+        <td>{{rating.firstname}} {{rating.lastname}}</td>
+        <td>{{rating.stars}}</td>
+        <td>{{rating.description}}</td>
+        <td>{{rating.upvotes}}</td>
+        <td>{{rating.downvotes}}</td>
+        <td>{{rating.time_reviewed}}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<nav aria-label="Page navigation">
+  <ul class="pagination">
+    {% set total_pages = (total // per_page) + (1 if total % per_page > 0 else 0) %}
+    {% for p in range(1, total_pages + 1) %}
+    <li class="page-item {% if p == page %}active{% endif %}">
+      <a class="page-link" href="{{ url_for('products.product_details', pid=pid, page=p) }}">{{ p }}</a>
+    </li>
+    {% endfor %}
+  </ul>
+</nav>
 {% endblock %}
