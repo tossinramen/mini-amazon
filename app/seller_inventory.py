@@ -6,30 +6,121 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from .models.user import User
 from .models.seller_inventory import SellerInventory
+from datetime import datetime
 
 from flask import Blueprint
 bp = Blueprint('seller_inventory', __name__)
 
 
+# @bp.route('/seller_page/<int:uid>')
+# def inventory(uid):
+#     page = request.args.get('page', 1, type=int)
+#     per_page = 10  
+#     offset = (page - 1) * per_page
+#     seller_inventory = SellerInventory.get_all_by_uid_with_pagination(uid, per_page, offset)
+#     total_items = SellerInventory.count_all_by_uid(uid)  
+#     total_pages = (total_items + per_page - 1) // per_page
+    
+#     return render_template('seller_page.html', inventory=seller_inventory,
+#                            page=page, per_page=per_page, total=total_items,
+#                            total_pages=total_pages, uid=uid)
+
 @bp.route('/seller_page/<int:uid>')
 def inventory(uid):
+    PER_PAGE = 10
     page = request.args.get('page', 1, type=int)
-    per_page = 10  
-    offset = (page - 1) * per_page
-    seller_inventory = SellerInventory.get_all_by_uid_with_pagination(uid, per_page, offset)
-    total_items = SellerInventory.count_all_by_uid(uid)  
-    total_pages = (total_items + per_page - 1) // per_page
+    sort_type = request.args.get('sort_type', default='pid', type=str)
+    sort_order = request.args.get('sort_order', default='desc', type=str)
+    search_type = request.args.get('search_type', default='product_id', type=str)
+    search_order = request.args.get('search_order', type=str)
+    offset = (page - 1) * PER_PAGE
+
+    # Assuming you have a total count query
+    total_query = '''
+        SELECT COUNT(*) AS total_count FROM (SELECT uid, pid, quantity, name, price
+        FROM Seller_Inventory, Products
+        WHERE uid = :uid
+        AND Seller_Inventory.pid = Products.id
+        '''
+
+    # Modify the query based on search conditions
+    if search_type == 'product_id' and search_order:
+        total_query += " AND pid = :search_order"
+        search_type = 'pid'
+    elif search_type == 'product_name' and search_order:
+        total_query += " AND name ~* :search_order"
+        search_type = 'name'
+    elif search_type == 'quantity' and search_order:
+        total_query += " AND quantity = :search_order"
+        search_type = 'qty'
+
+    if sort_type == 'product_id':
+        sort_type = 'pid'
+    elif sort_type == 'product_name':
+        sort_type = 'name'
+    elif sort_type == 'quantity':
+        sort_type = 'qty'
+
+    total_query += ") as B"
+
+    # Execute the modified total count query
+    total_result = app.db.execute(total_query, uid=uid, search_order=search_order)
+    total = total_result[0][0] if total_result else 0
+
+    # Build the base query
+    query = """
+        SELECT uid, pid, quantity, name, price
+        FROM Seller_Inventory, Products
+        WHERE uid = :uid
+        AND Seller_Inventory.pid = Products.id
+    """
+
+    # Add search conditions
+    if search_type == 'pid' and search_order:
+        query += " AND pid = :search_order"
+    elif search_type == 'name' and search_order:
+        query += " AND name ~* :search_order"
+    elif search_type == 'qty' and search_order:
+        query += " AND qty = :search_order"
+
     
-    return render_template('seller_page.html', inventory=seller_inventory,
-                           page=page, per_page=per_page, total=total_items,
-                           total_pages=total_pages, uid=uid)
+
+    # Add ORDER BY clause
+    if sort_type and sort_type != 'None':
+        query += f" ORDER BY {sort_type} {sort_order}"
+
+    # Add LIMIT and OFFSET
+    query += " LIMIT :limit OFFSET :offset"
+
+    # Execute the query
+    seller_inventory = app.db.execute(
+        query,
+        uid=uid,
+        search_order=search_order,
+        limit=PER_PAGE,
+        offset=offset
+    )
+
+    return render_template(
+        'seller_page.html',
+        inventory=seller_inventory,
+        page=page,
+        per_page=PER_PAGE,
+        total=total,
+        total_pages=(total + PER_PAGE - 1) // PER_PAGE,
+        uid=uid,
+        search_type=search_type,
+        search_order=search_order,
+        sort_order=sort_order
+    )
+
 
 @bp.route('/past_seller_orders/<int:uid>')
 def past_seller_orders(uid):
     PER_PAGE = 10 
     page = request.args.get('page', 1, type=int)
     offset = (page - 1) * PER_PAGE
-    total_result = app.db.execute('''SELECT COUNT(*) AS total_count FROM (SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled
+    total_result = app.db.execute('''SELECT COUNT(*) AS total_count FROM (SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled, time_fulfilled
         FROM BoughtLineItems, Users, Purchases, Products
         WHERE sid = :uid
         AND Purchases.id = BoughtLineItems.id
@@ -40,7 +131,7 @@ def past_seller_orders(uid):
     total = total_result[0][0] if total_result else 0
 
     query = """
-        SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled
+        SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled, time_fulfilled
         FROM BoughtLineItems, Users, Purchases, Products
         WHERE sid = :uid
         AND Purchases.id = BoughtLineItems.id
@@ -125,7 +216,7 @@ def filtered_orders(uid):
         sort_type = "name"
 
     # Assuming you have a total count query
-    total_query = '''SELECT COUNT(*) AS total_count FROM (SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled
+    total_query = '''SELECT COUNT(*) AS total_count FROM (SELECT BoughtLineItems.id, sid, pid, name, qty, BoughtLineItems.price, time_purchased, Users.address, fulfilled, time_fulfilled
         FROM BoughtLineItems, Users, Purchases, Products
         WHERE sid = :uid
         AND Purchases.id = BoughtLineItems.id
@@ -158,7 +249,7 @@ def filtered_orders(uid):
 
     # Build the base query
     query = """
-        SELECT BoughtLineItems.id, sid, pid, qty, name, BoughtLineItems.price, time_purchased, Users.address, fulfilled
+        SELECT BoughtLineItems.id, sid, pid, qty, name, BoughtLineItems.price, time_purchased, Users.address, fulfilled, time_fulfilled
         FROM BoughtLineItems, Users, Purchases, Products
         WHERE sid = :uid
         AND Purchases.id = BoughtLineItems.id
@@ -323,11 +414,21 @@ def add_product():
 @bp.route('/toggle_fulfillment/<int:order_id>/<int:pid>/<int:fulfilled>/', methods=['GET', 'POST'])
 def toggle_fulfillment(order_id, pid, fulfilled):
     uid = current_user.id
+    current_time = datetime.utcnow()
+
     # Toggle the fulfillment status
     if fulfilled:
-        update_query = 'UPDATE BoughtLineItems SET fulfilled = FALSE WHERE id = :order_id AND sid = :uid AND pid = :pid'
+        update_query = '''
+            UPDATE BoughtLineItems
+            SET fulfilled = FALSE, time_fulfilled = NULL
+            WHERE id = :order_id AND sid = :uid AND pid = :pid
+        '''
     else:
-        update_query = 'UPDATE BoughtLineItems SET fulfilled = TRUE WHERE id = :order_id AND sid = :uid AND pid = :pid'
-    app.db.execute(update_query, order_id=order_id, uid=uid, pid=pid)
+        update_query = '''
+            UPDATE BoughtLineItems
+            SET fulfilled = TRUE, time_fulfilled = :current_time
+            WHERE id = :order_id AND sid = :uid AND pid = :pid
+        '''
+    app.db.execute(update_query, order_id=order_id, uid=uid, pid=pid, current_time=current_time)
 
     return redirect(url_for('seller_inventory.past_seller_orders', uid=uid))

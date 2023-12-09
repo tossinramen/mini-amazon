@@ -168,7 +168,7 @@
       <td>{{ order.price }}</td>
       <td>{{ order.time_purchased }}</td>
       <td>{{ order.address }}</td>
-      <td>{{ "Yes" if order.fulfilled else "No" }}</td>
+      <td>{{ order.time_fulfilled if order.fulfilled else "In Transit" }}</td>
       <td>
         <!-- Add a button to toggle fulfillment status -->
         <form method="POST"

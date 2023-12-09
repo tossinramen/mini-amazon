@@ -27,7 +27,7 @@
         <td>${{ '%0.2f' % detail.price }}</td>
         <td>{{ detail.seller_name }}</td>
         <td>{{ 'Yes' if detail.fulfilled else 'No' }}</td>
-        <td>{{ detail.fulfillment_time }}</td>
+        <td>{{ detail.time_fulfilled }}</td>
     </tr>
     {% endfor %}
   </tbody>

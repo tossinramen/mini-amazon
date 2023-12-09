@@ -88,5 +88,6 @@ CREATE TABLE BoughtLineItems (
     qty INT NOT NULL,
     price DECIMAL(10,2) NOT NULL,
     fulfilled BOOLEAN DEFAULT FALSE,
+    time_fulfilled TIMESTAMP without time zone DEFAULT NULL,
     PRIMARY KEY (id, sid, pid)
 );
