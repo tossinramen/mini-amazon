@@ -148,32 +148,41 @@ def product_details(pid):
 
     seller_info = app.db.execute(seller_query, pid=pid)
 
+    if current_user.is_authenticated:
+        uid = current_user.id
+    else:
+        uid = -1
+
     # list each review for the product
     rating_query = f'''
-    SELECT pr.uid as uid, pr.pid as pid, u.firstname as firstname, u.lastname as lastname, p.name as product_name, pr.description, pr.upvotes, pr.downvotes, pr.stars, pr.time_reviewed
+    SELECT pr.uid as uid, pr.pid as pid, u.firstname as firstname, u.lastname as lastname, p.name as product_name, pr.description, pr.upvotes, pr.downvotes, pr.stars, pr.time_reviewed, pr.image_url
             FROM Product_Rating pr
             JOIN Products p ON p.id = pr.pid
             JOIN Users u ON u.id = pr.uid
-            WHERE pid = {pid} AND NOT pr.uid = {current_user.id}
+            WHERE pid = {pid} AND NOT pr.uid = {uid}
             ORDER BY time_reviewed DESC
             LIMIT :limit OFFSET :offset
     '''
+    #Get the total number of ratings for the product
     total_query = f''' SELECT COUNT(*)
             FROM Product_Rating pr
             JOIN Products p ON p.id = pr.pid
             JOIN Users u ON u.id = pr.uid
             WHERE pid = {pid}
     '''
+    #Find if there are any rows where the user has bought the item
     check_bought_query = f''' SELECT COUNT(*)
             FROM BoughtLineItems b
             JOIN Purchases p ON p.id = b.id
-            WHERE pid = {pid} AND p.uid = {current_user.id}
+            WHERE pid = {pid} AND p.uid = {uid}
     '''
+    #Find if there is already a review of the product by the current user
     check_reviewed_query = f''' SELECT COUNT(*)
             FROM Product_Rating pr
-            WHERE pid = {pid} AND uid = {current_user.id}
+            WHERE pid = {pid} AND uid = {uid}
     '''
     check = app.db.execute(check_bought_query)
+    #Create a variable we can pass into the html to make the accurate display based on if the user has a review or has not bought the item
     if int(check[0][0]) > 0:
         allowed = 1
     else:
@@ -183,18 +192,20 @@ def product_details(pid):
         reviewed_allowed = 0
     else:
         reviewed_allowed = 1
+    #Query that displays the current user's review of the product if they have one    
     user_rating_query = f'''
-    SELECT pr.uid as uid, pr.pid as pid, u.firstname as firstname, u.lastname as lastname, p.name as product_name, pr.description, pr.upvotes, pr.downvotes, pr.stars, pr.time_reviewed
+    SELECT pr.uid as uid, pr.pid as pid, u.firstname as firstname, u.lastname as lastname, p.name as product_name, pr.description, pr.upvotes, pr.downvotes, pr.stars, pr.time_reviewed, pr.image_url
             FROM Product_Rating pr
             JOIN Products p ON p.id = pr.pid
             JOIN Users u ON u.id = pr.uid
-            WHERE pid = {pid} AND pr.uid = {current_user.id}
+            WHERE pid = {pid} AND pr.uid = {uid}
             ORDER BY time_reviewed DESC
     '''
     user_rating_info = app.db.execute(user_rating_query)    
     total_result = app.db.execute(total_query)
     total = total_result[0][0] if total_result else 0
     rating_info = app.db.execute(rating_query, limit=PER_PAGE, offset=offset)
+    #render_template with all the variables we need for the html
     return render_template('detailed_product.html', 
                            name=name,
                            pid=id,

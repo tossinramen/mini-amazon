@@ -18,6 +18,7 @@
       <th scope="col">Seller</th>
       <th scope="col">Fulfilled</th>
       <th scope="col">Fulfillment Time</th>
+      <th scope="col">Submit a Review</th>
     </tr>
   </thead>
   <!-- all details -->
@@ -30,6 +31,9 @@
         <td>{{ detail.seller_name }}</td>
         <td>{{ 'Yes' if detail.fulfilled else 'No' }}</td>
         <td>{{ detail.time_fulfilled }}</td>
+        <td>
+          <a href="{{ url_for('seller_rating.redirect_to_seller_page', sid=detail.sid) }}" class="btn btn-light">Add/Edit Review</a>
+        </td>
     </tr>
     {% endfor %}
   </tbody>

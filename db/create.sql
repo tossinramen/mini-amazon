@@ -36,6 +36,7 @@ CREATE TABLE Product_Rating (
     downvotes INT NOT NULL,
     stars INT CHECK (stars >= 1 AND stars <= 5), 
     time_reviewed timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+    image_url VARCHAR(255) NULL,
     primary key (uid, pid)
 );
 
@@ -47,6 +48,7 @@ CREATE TABLE Seller_Rating (
     downvotes INT NOT NULL,
     stars INT CHECK (stars >= 1 AND stars <= 5), 
     time_reviewed timestamp without time zone NOT NULL DEFAULT (current_timestamp AT TIME ZONE 'UTC'),
+    image_url VARCHAR(255) NULL,
     primary key (uid, sid)
 );
 CREATE TABLE Seller_Inventory (

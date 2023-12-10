@@ -12,6 +12,12 @@
         <label for="description">Description</label>
         <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
       </div>
+
+      <div class="form-group">
+        <label for="image">Image URL (Optional)</label>
+        <input type="text" class="form-control" id="image_url" name="image_url" placeholder="Enter image link">
+      </div>
+
       <html lang="en">
         <head>
             <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">

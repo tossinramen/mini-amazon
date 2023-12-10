@@ -7,13 +7,14 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from .models.user import User
 from markupsafe import Markup
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 
 
 from flask import Blueprint
 bp = Blueprint('users', __name__)
-
+PER_PAGE = 10
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -206,6 +207,21 @@ def update_address():
     app.db.execute(update_query, address=new_address, user_id=current_user.get_id())
   
     return redirect(url_for('users.profile'))
+
+@bp.route('/update_password', methods=['POST'])
+@login_required
+def update_password():
+    new_password = request.form['new_password']
+    hashed_password = current_user.set_password(new_password)
+    
+    if hashed_password:
+        update_query = 'UPDATE Users SET password = :password WHERE id = :user_id'
+        app.db.execute(update_query, password=hashed_password, user_id=current_user.get_id())
+    else:
+        pass
+
+    return redirect(url_for('users.profile'))
+
 #go to balance management page
 @bp.route('/update_balance', methods=['POST'])
 @login_required
@@ -242,30 +258,74 @@ def withdraw():
 #public profile, make diffeerent for seller. seller needs rating info about them.
 @bp.route('/user/<int:user_id>', methods=['GET'])
 def public_user_profile(user_id):
+    #Get all the details for the pagination of both tables
+    page = request.args.get('page', 1, type=int)
+    seller_page = request.args.get('seller_page', 1, type=int)
+    offset = (page - 1) * PER_PAGE
+    seller_offset = (seller_page - 1) * PER_PAGE
+    total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM Product_Rating WHERE uid = :uid', uid=user_id)
+    total = total_result[0][0] if total_result else 0
+    seller_total_result = app.db.execute('SELECT COUNT(*) AS total_count FROM Seller_Rating WHERE sid = :sid', sid=user_id)
+    seller_total = seller_total_result[0][0] if seller_total_result else 0
     user_query = 'SELECT id, firstname, lastname, email FROM Users WHERE id = :user_id'
     user_info_result = app.db.execute(user_query, user_id=user_id)
     user_info = user_info_result[0] if user_info_result else None
 
     reviews_query = '''
-    SELECT pr.name, r.description, r.stars, r.time_reviewed, s.uid AS seller_id, u.firstname || ' ' || u.lastname AS seller_name
+    SELECT pr.name, r.description, r.stars, r.time_reviewed, s.uid AS seller_id, u.firstname || ' ' || u.lastname AS seller_name, r.image_url
     FROM Product_Rating r
     JOIN Products pr ON r.pid = pr.id
     JOIN Seller_Inventory si ON pr.id = si.pid
     JOIN Sellers s ON si.uid = s.uid
     JOIN Users u ON s.uid = u.id
     WHERE r.uid = :user_id
+    ORDER BY r.time_reviewed DESC
+    LIMIT :limit OFFSET :offset
     '''
-    user_reviews = app.db.execute(reviews_query, user_id=user_id)
+    user_reviews = app.db.execute(reviews_query, user_id=user_id, limit = PER_PAGE, offset = offset)
 
     is_seller_query = 'SELECT COUNT(*) FROM Sellers WHERE uid = :user_id'
     is_seller_result = app.db.execute(is_seller_query, user_id=user_id)
     is_seller = is_seller_result[0][0] > 0 if is_seller_result else False
+
+    #Check if the user has bought from the seller
+    check_bought_query = f''' SELECT COUNT(*)
+            FROM BoughtLineItems b
+            JOIN Purchases p ON p.id = b.id
+            WHERE sid = :sid AND p.uid = :uid
+    '''
+    #Check if the user has already reviewed the seller
+    check_reviewed_query = f''' SELECT COUNT(*)
+            FROM Seller_Rating pr
+            WHERE sid = :sid AND uid = :uid
+    '''
+    check = app.db.execute(check_bought_query, sid=user_id, uid=current_user.id)
+    #Create variables we can use in the html file based on the two checks above
+    if int(check[0][0]) > 0:
+        allowed = 1
+    else:
+        allowed = 0
+    reviewed_check = app.db.execute(check_reviewed_query, sid=user_id, uid=current_user.id)
+    if reviewed_check is not None and int(reviewed_check[0][0]) > 0:
+        reviewed_allowed = 0
+    else:
+        reviewed_allowed = 1
+    #Get the user's current review of the seller, given that they have one
+    current_user_rating_query = f'''
+    SELECT u.id AS reviewer_id, sr.sid AS sid, u.firstname || ' ' || u.lastname AS reviewer_name, sr.description as description, sr.stars as stars, sr.time_reviewed as time_reviewed, sr.upvotes as upvotes, sr.downvotes as downvotes, sr.image_url
+        FROM Seller_Rating sr
+        JOIN Users u ON sr.uid = u.id
+        WHERE sr.sid = :sid AND sr.uid = :uid 
+    '''
     
+    current_user_rating_info = app.db.execute(current_user_rating_query, sid=user_id, uid=current_user.id)
+
     seller_info = None
     seller_reviews = None
     if is_seller:
+
         seller_query = '''
-        SELECT address, avg_rating, COUNT(sr.sid) as rating_count
+        SELECT address, AVG(sr.stars) as avg_rating, COUNT(sr.sid) as rating_count
         FROM Users
         JOIN Sellers ON Users.id = Sellers.uid
         LEFT JOIN Seller_Rating sr ON Sellers.uid = sr.sid
@@ -276,14 +336,16 @@ def public_user_profile(user_id):
         seller_info = seller_info_result[0] if seller_info_result else None
         
         seller_reviews_query = '''
-        SELECT u.id AS reviewer_id, u.firstname || ' ' || u.lastname AS reviewer_name, sr.description, sr.stars, sr.time_reviewed
+        SELECT u.id AS reviewer_id, u.firstname || ' ' || u.lastname AS reviewer_name, sr.description, sr.stars, sr.time_reviewed, sr.image_url
         FROM Seller_Rating sr
         JOIN Users u ON sr.uid = u.id
         WHERE sr.sid = :user_id
+        ORDER BY sr.time_reviewed DESC 
+        LIMIT :limit OFFSET :offset         
         '''
-        seller_reviews = app.db.execute(seller_reviews_query, user_id=user_id)
+        seller_reviews = app.db.execute(seller_reviews_query, user_id=user_id, limit = PER_PAGE, offset = seller_offset)
 
-    return render_template('public_user_profile.html', user_info=user_info, user_reviews=user_reviews, seller_info=seller_info, seller_reviews=seller_reviews)
+    return render_template('public_user_profile.html', user_info=user_info, user_reviews=user_reviews, seller_info=seller_info, seller_reviews=seller_reviews, allowed=allowed, reviewed_allowed=reviewed_allowed, sid=user_id, current_user_rating_info=current_user_rating_info, total=total, page=page, seller_page=seller_page, per_page=PER_PAGE, seller_total=seller_total)
 #need for profile link
 @bp.context_processor
 def context_processor():
