@@ -192,7 +192,7 @@ def order_details(uid, purchase_id):
 def get_order_details(purchase_id):
     # details of each product in a specific purchase
     sql_query = '''
-        SELECT pr.name, bli.qty, bli.price, u.firstname, u.lastname, bli.fulfilled, bli.time_fulfilled
+        SELECT pr.name, bli.qty, bli.price, u.firstname, u.lastname, bli.fulfilled, bli.time_fulfilled, bli.sid
         FROM BoughtLineItems bli
         INNER JOIN Products pr ON bli.pid = pr.id
         INNER JOIN Users u ON bli.sid = u.id
@@ -210,7 +210,8 @@ def get_order_details(purchase_id):
             'price': row[2],
             'seller_name': f"{row[3]} {row[4]}",
             'fulfilled': row[5],
-            'time_fulfilled': row[6] if row[5] else 'Purchase not fulfilled'
+            'time_fulfilled': row[6] if row[5] else 'Purchase not fulfilled',
+            'sid': row[7]
         }
         order_details.append(detail)
 
