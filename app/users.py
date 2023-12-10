@@ -7,6 +7,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 from .models.user import User
 from markupsafe import Markup
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 
@@ -206,6 +207,21 @@ def update_address():
     app.db.execute(update_query, address=new_address, user_id=current_user.get_id())
   
     return redirect(url_for('users.profile'))
+
+@bp.route('/update_password', methods=['POST'])
+@login_required
+def update_password():
+    new_password = request.form['new_password']
+    hashed_password = current_user.set_password(new_password)
+    
+    if hashed_password:
+        update_query = 'UPDATE Users SET password = :password WHERE id = :user_id'
+        app.db.execute(update_query, password=hashed_password, user_id=current_user.get_id())
+    else:
+        pass
+
+    return redirect(url_for('users.profile'))
+
 #go to balance management page
 @bp.route('/update_balance', methods=['POST'])
 @login_required

@@ -106,7 +106,11 @@
                 <input type="text" name="address" value="{{ user.address or '' }}">
                 <input type="submit" value="Update Address" class="btn btn-primary">
             </form>
-
+            <form action="{{ url_for('users.update_password') }}" method="post" class="form-group">
+                <label>New Password:</label>
+                <input type="password" name="new_password" required>
+                <input type="submit" value="Update Password" class="btn btn-primary">
+            </form>
             <form action="{{ url_for('users.update_balance') }}" method="post" class="form-group">
                 <label>Account Balance:</label>
                 <input type="text" name="balance" value="{{ user.balance }}" readonly class="form-control">
