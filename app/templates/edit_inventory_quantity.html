@@ -12,35 +12,44 @@
 <table class='table table-hover table-bordered container'>
   <thead class="thead-dark">
     <tr>
+      <th scope="col">Product Image</th>
+      <th scope="col">Product Name</th>
       <th scope="col">Product ID</th>
+      <th scope="col">Price</th>
       <th scope="col">Quantity</th>
     </tr>
   </thead>
 
   <tbody>
     {% for prod in product%}
-      <tr>
-        <td>{{prod.pid}}</td>
-        <td>{{prod.quantity}}</td>
-      </tr>
+    <tr>
+      <td>
+        <img src="{{ prod.image_url }}" alt="{{ prod.name }} Image" width="100" height="100">
+      </td>
+      <td>{{ prod.name }}</td>
+      <td>{{prod.pid}}</td>
+      <td>{{prod.price}}</td>
+      <td>{{prod.quantity}}</td>
+    </tr>
     {% endfor %}
   </tbody>
 </table>
 
 <head>
-    <title>Update Quantity</title>
+  <title>Update Quantity</title>
 </head>
+
 <body>
-    {% for prod in product%}
-    <h1>Update Quantity</h1>
-    <form method="POST" action="/update_quantity">
-        <label for="new_quantity">New Quantity:</label>
-        <input type="text" name="new_quantity"><br>
-        
-        <input type="hidden" name="pid" value="{{prod.pid}}">
-        <input type="submit" value="Update">
-    </form>
-    {% endfor %}
+  {% for prod in product%}
+  <h1>Update Quantity</h1>
+  <form method="POST" action="/update_quantity">
+    <label for="new_quantity">New Quantity:</label>
+    <input type="text" name="new_quantity"><br>
+
+    <input type="hidden" name="pid" value="{{prod.pid}}">
+    <input type="submit" class="btn btn-light" value="Update">
+  </form>
+  {% endfor %}
 </body>
 
 {% endblock %}

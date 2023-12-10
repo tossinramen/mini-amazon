@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<br><br>
+<!-- <h3>Your Cart ID: {{ cart_id }}</h3> -->
+
+<!-- home page link -->
+
+<body>
+    <a href="{{ url_for('index.index', uid=uid) }}" type="button" class="btn btn-light">Home</a>
+</body>
+<br><br>
+
+<!-- title -->
+<h2>Wishlist Items:</h2>
+
+<!-- form for updatings qtys and submitting cart -->
+<script>
+    // JS fxn for redirecting to product details
+    function redirectToProductDetails(pid) {
+        var baseUrl = "{{ url_for('carts.product_details', pid=0) }}";
+        var urlWithPid = baseUrl.replace('0', pid);
+        window.location = urlWithPid;
+    }
+</script>
+
+<!-- display cart items -->
+<table class='table table-hover table-bordered container'>
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">Product Name</th>
+            <th scope="col">Seller Name</th>
+            <th scope="col">Price</th>
+            <th scope="col">Remove</th>
+            <th scope="col">Add to Cart</th>
+        </tr>
+    </thead>
+    <!-- var to calc total cart amt -->
+
+    <!-- table body to list each cart item -->
+    <tbody>
+        {% for item in wishlist_items %}
+        <tr>
+            <!-- redir on click to detailed product -->
+            <td onclick="redirectToProductDetails({{ item.pid }});">{{ item.p_name }}</td>
+            <td>{{ item.name }}</td>
+            <!-- product price -->
+            <td>${{ '%0.2f' % item.price }}</td>
+
+            <!-- remove button -->
+            <td>
+                <form method="POST"
+                    action="{{ url_for('wishes.remove_item', id=item.id) }} ">
+                    <input type="hidden" name="user_id" value="{{ uid }}">
+                    <button type="submit" class="btn remove-btn">
+                        <span class="remove-icon">&times;</span>
+                    </button>
+                </form>
+            </td>
+            <!-- wishlist button -->
+            <td>
+                <form method="POST" action="{{ url_for('wishes.move_to_cart', id=item.id, pid=item.pid) }}">
+                    <button type="submit" class="wishlist-btn"></button>
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <!-- table footer, cart total -->
+    <tfoot>
+    </tfoot>
+</table>
+
+<!-- hidden field, pass uid -->
+<input type="hidden" name="user_id" value="{{ uid }}">
+
+<!-- buttons at btm of pg -->
+<div class="text-right">
+    <a href="{{ url_for('carts.redirect_to_user_cart') }}" type="button"
+        class="btn btn-success btn-lg cart-action-btn">Back to Cart</a>
+</div>
+</form>
+
+{% endblock %}

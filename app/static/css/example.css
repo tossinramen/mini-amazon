@@ -36,19 +36,11 @@ body {
   width: 50%;
 }
 
-.remove-btn {
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-  padding: 0;
-  outline: none;
-}
-
 .remove-icon {
   display: inline-block;
   padding: .5rem;
   font-size: 1.2rem;
-  color: var(--error-color);
+  color: #ddd;
   transition: all 0.3s ease;
   border-radius: 0.25rem;
 }
@@ -160,4 +152,33 @@ a {
 }
 a:hover {
   text-decoration: underline;
+}
+
+.wishlist-btn {
+  border: none;
+  background-color: #28a745;
+  cursor: pointer;
+  padding: 10px 8px; 
+  border-radius: 0.25rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.wishlist-btn:hover {
+  background-color: #34ce57;
+  box-shadow: 0 0 10px #34ce57;
+}
+
+.wishlist-btn::before {
+  content: '\2713'; 
+  color: white;
+  font-weight: bold;
+}
+
+.remove-btn {
+  border: none;
+  background-color: #ff474c;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
 }

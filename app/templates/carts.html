@@ -1,46 +1,75 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <br><br>
+<!-- <h3>Your Cart ID: {{ cart_id }}</h3> -->
+
+<!-- home page link -->
+<!-- title -->
 <h2>Cart Items:</h2>
 
+<!-- form for updatings qtys and submitting cart -->
 <form method = "POST" action="{{ url_for('carts.update_all_quantities') }}">
+  <script>
+    // JS fxn for redirecting to product details
+    function redirectToProductDetails(pid) {
+      var baseUrl = "{{ url_for('carts.product_details', pid=0) }}";
+      var urlWithPid = baseUrl.replace('0', pid);
+      window.location = urlWithPid;
+    }
+  </script>
+  <!-- display cart items -->
   <table class='table table-hover table-bordered container'>
     <thead class="thead-dark">
       <tr>
         <th scope="col">Product Name</th>
+        <th scope="col">Seller Name</th>
         <th scope="col">Price</th>
         <th scope="col">Quantity</th>
         <th scope="col">Total Price</th>
         <th scope="col">Remove</th>
+        <th scope="col">Add to Wishlist</th>
       </tr>
     </thead>
-
+    <!-- var to calc total cart amt -->
     {% set cart_totals = namespace(total=0) %}
 
+    <!-- table body to list each cart item -->
     <tbody>
       {% for item in cart_items %}
       {% set item_total = item.price * item.qty %}
       {% set cart_totals.total = cart_totals.total + item_total %}
         <tr>
-          <td>{{ item.product_name }}</td>
+          <!-- redir on click to detailed product -->
+          <td onclick="redirectToProductDetails({{ item.pid }});">{{ item.product_name }}</td>
+          <td>{{ item.seller_name }}</td>
+          <!-- product price -->
           <td>${{ '%0.2f' % item.price }}</td>
+          <!-- qty input -->
           <td>
             <input type="number" name="quantity_{{ item.id }}_{{ item.pid }}_{{ item.sid }}" value="{{ item.qty }}" min="1" class="form-control">
           </td>
+          <!-- total item price -->
           <td>${{ '%0.2f' % item_total }}</td>
+          <!-- remove button -->
           <td>
-            <form method = "POST" action="{{ url_for('carts.remove_item', id=item.id, pid=item.pid, sid=item.sid) }} ">
-              <input type="hidden" name="user_id" value="{{ uid }}">
+            <form method="POST" action="{{ url_for('carts.remove_item', id=item.id, pid=item.pid, sid=item.sid) }}">
               <button type="submit" class="btn remove-btn">
                 <span class="remove-icon">&times;</span>
+              </button>
+            </form>
+          </td>
+          <!-- wishlist button -->
+          <td>
+            <form method="POST" action="{{ url_for('carts.add_to_wishlist', id=item.id, pid=item.pid, sid=item.sid) }}">
+              <button type="submit" class="wishlist-btn"></button>
               </button>
             </form>
           </td>
         </tr>
       {% endfor %}
     </tbody>
+    <!-- table footer, cart total -->
     <tfoot>
   <tr>
     <td colspan="3" class="text-right"><strong>Cart Total:</strong></td>
@@ -49,11 +78,12 @@
 </tfoot>
   </table>
 
-  
+  <!-- hidden field, pass uid -->
   <input type="hidden" name="user_id" value="{{ uid }}">
 
-  
+  <!-- buttons at btm of pg -->
   <div class="text-right">
+    <a href="{{ url_for('carts.view_wishlist', uid=current_user.id) }}" class="btn btn-success btn-lg cart-action-btn">View Wishlist</a>
     <button type="submit" class="btn btn-info btn-lg cart-action-btn">Update Quantities</button>
     <button type="submit" class="btn btn-success btn-lg cart-action-btn" formaction="{{ url_for('carts.submit_cart') }}">Submit Cart</button>
   </div>
