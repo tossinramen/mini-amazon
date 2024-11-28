@@ -13,8 +13,7 @@ num_seller_ratings = 1000
 Faker.seed(0)
 fake = Faker()
 
-# api_key = "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"
-# client = OpenAI(api_key=api_key)
+
 
 
 def get_csv_writer(f):
