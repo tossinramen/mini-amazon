@@ -1,6 +1,5 @@
 from werkzeug.security import generate_password_hash
 import csv
-from faker import Faker
 import random
 from datetime import datetime, timedelta
 
@@ -9,9 +8,6 @@ num_products = 2000
 num_purchases = 2500
 num_product_ratings = 1000
 num_seller_ratings = 1000
-
-Faker.seed(0)
-fake = Faker()
 
 
 
